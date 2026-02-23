@@ -1,7 +1,7 @@
 import { query } from "$app/server";
 import { sql, SQL } from "bun";
 
-export const seedDatabase = query(async () => {
+export const SEED_DATABASE = query(async () => {
   try {
     await sql`
       SET timezone TO 'America/New_York';
