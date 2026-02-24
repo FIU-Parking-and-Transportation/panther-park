@@ -28,22 +28,40 @@ export const SEED_DATABASE = query(async () => {
         id                  uuid DEFAULT uuidv7() PRIMARY KEY,
         camera_name         text NOT NULL,
         confidence_score    integer,
-        context_image       uuid,
-        overview_image      uuid,
-        plate_image         uuid,
-        patroller_id        uuid,
-        patroller_user_id   uuid,
-        patroller_user_name text,
+        context_image       text,
+        overview_image      text,
+        plate_image         text,
         plate               text NOT NULL,
         state               text,
-        user_name           text,
         vehicle_id          uuid,
-        location_geog       geography(POINT, 4326) NOT NULL,
+        location_geog       geography(POINT, 4326),
         attributes          jsonb NOT NULL DEFAULT '{}'::jsonb,
         created_at          timestamptz NOT NULL DEFAULT now(),
         read_at             timestamptz NOT NULL DEFAULT now(),
         CONSTRAINT chk_state_len CHECK (state IS NULL OR char_length(state) = 2)
-      ); -- Separate table for lpr hits
+      );
+
+      CREATE TABLE IF NOT EXISTS patroller_read (
+        id                  uuid DEFAULT uuidv7() PRIMARY KEY,
+        camera_name         text NOT NULL,
+        confidence_score    integer,
+        context_image       text,
+        overview_image      text,
+        plate_image         text,
+        patroller_id        uuid NOT NULL,
+        patroller_user_id   uuid NOT NULL,
+        patroller_user_name text NOT NULL,
+        plate               text NOT NULL,
+        state               text,
+        user_name           text NOT NULL,
+        user_id             uuid NOT NULL,
+        vehicle_id          uuid,
+        location_geog       geography(POINT, 4326),
+        attributes          jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at          timestamptz NOT NULL DEFAULT now(),
+        read_at             timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT chk_state_len CHECK (state IS NULL OR char_length(state) = 2)
+      );
 
       CREATE INDEX IF NOT EXISTS lpr_read_vehicle_id_idx
       ON lpr_read (camera_name);
@@ -51,8 +69,8 @@ export const SEED_DATABASE = query(async () => {
       ON lpr_read (plate);
       CREATE INDEX IF NOT EXISTS lpr_read_state_idx
       ON lpr_read (state);
-      CREATE INDEX IF NOT EXISTS lpr_read_patroller_user_name_idx
-      ON lpr_read (patroller_user_name);
+      CREATE INDEX IF NOT EXISTS patroller_read_patroller_user_name_idx
+      ON patroller_read (patroller_user_name);
       CREATE INDEX IF NOT EXISTS lpr_read_attributes_gin
       ON lpr_read USING gin (attributes);
 
