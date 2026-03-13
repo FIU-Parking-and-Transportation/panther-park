@@ -5,7 +5,7 @@ import { getFacilityList } from "$lib/facilities/data.remote";
 
 const lprReadPayloadSchema = v.object({
   Attributes: v.record(v.string(), v.string()),
-  CameraName: v.string(),
+  CameraName: v.pipe(v.string(), v.nonEmpty("Must have a camera name")),
   ContextImage: v.pipe(v.string(), v.base64()), // TODO: store the images in S3
   ConfidenceScore: v.pipe(
     v.string(),
@@ -16,18 +16,18 @@ const lprReadPayloadSchema = v.object({
   Latitude: v.pipe(v.string(), v.toNumber("Must be a valid number")),
   Longitude: v.pipe(v.string(), v.toNumber("Must be a valid number")),
   OverviewImage: v.pipe(v.string(), v.base64()),
-  Plate: v.string(),
+  Plate: v.pipe(v.string(), v.nonEmpty("Must have a plate number")),
   PlateImage: v.pipe(v.string(), v.base64()),
-  State: v.pipe(
-    v.string(),
-    v.check(
-      (val) => val.length === 2 || val.length === 0,
-      "State must be 2 characters or empty",
+  State: v.fallback(
+    v.pipe(
+      v.string(),
+      v.check((val) => val.length === 2 || val.length === 0),
+      v.toUpperCase(),
     ),
-    v.toUpperCase(),
+    "",
   ),
   VehicleID: v.pipe(v.string(), v.uuid()),
-  DateUtc: v.string(),
+  DateUtc: v.string(), // TODO: Add date time validation
   TimeUtc: v.string(),
 });
 
