@@ -1,6 +1,7 @@
 import * as v from "valibot";
 import { query } from "$app/server";
 import { sql, SQL } from "bun";
+import { getFacilityList } from "$lib/facilities/data.remote";
 
 const lprReadPayloadSchema = v.object({
   Attributes: v.record(v.string(), v.string()),
@@ -30,6 +31,12 @@ const lprReadPayloadSchema = v.object({
   TimeUtc: v.string(),
 });
 
+async function dummyParkingFacility(): Promise<string> {
+  // TODO: Remove this facility generator shim
+  const facilities = await getFacilityList();
+  return facilities[Math.floor(Math.random() * facilities.length)].id;
+}
+
 type LprReadPayloadOutput = v.InferOutput<typeof lprReadPayloadSchema>;
 
 interface InsertLprReadResult {
@@ -52,6 +59,7 @@ export const insertLprRead = query(
           plate,
           state,
           vehicle_id,
+          parking_facility_id,
           location_geog,
           read_at
         )
@@ -62,6 +70,7 @@ export const insertLprRead = query(
           ${payload.Plate},
           ${payload.State},
           ${payload.VehicleID},
+          ${await dummyParkingFacility()},
           ST_SetSRID(ST_MakePoint(${payload.Longitude}, ${payload.Latitude}), 4326)::geography,
           ${utcIso}
         )

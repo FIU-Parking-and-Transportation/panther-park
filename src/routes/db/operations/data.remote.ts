@@ -26,6 +26,7 @@ export const SEED_DATABASE = query(async () => {
 
       CREATE TABLE IF NOT EXISTS lpr_read (
         id                  uuid DEFAULT uuidv7() PRIMARY KEY,
+        parking_facility_id uuid NOT NULL REFERENCES parking_facility(id),
         camera_name         text NOT NULL,
         confidence_score    integer,
         context_image       text,
