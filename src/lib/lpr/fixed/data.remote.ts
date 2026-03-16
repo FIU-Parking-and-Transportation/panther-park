@@ -68,7 +68,7 @@ export const insertLprRead = query(
           ${payload.CameraName},
           ${payload.ConfidenceScore},
           ${payload.Plate},
-          ${payload.State},
+          NULLIF (${payload.State},''),
           ${payload.VehicleID},
           ${await dummyParkingFacility()},
           ST_SetSRID(ST_MakePoint(${payload.Longitude}, ${payload.Latitude}), 4326)::geography,
