@@ -129,23 +129,93 @@ export const insertGarages = query(async () => {
     await sql`
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG4',
-        '{"student": 1440, "faculty": 0}', -- FIXME: Add correct split count
-        ST_SetSRID(ST_MakePoint(-80.373137, 25.760199), 4326)::geography
+        'PG1',
+        '{"student": 576, "employee": 425}',
+        ST_SetSRID(ST_MakePoint(-80.372083, 25.754794), 4326)::geography
       ) ON CONFLICT DO NOTHING;
-
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'PG2',
+        '{"student": 616, "employee": 345}',
+        ST_SetSRID(ST_MakePoint(-80.372089, 25.753842), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'PG3',
+        '{"student": 1202, "employee": 231}',
+        ST_SetSRID(ST_MakePoint(-80.379818, 25.758427), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'PG4',
+        '{"student": 995, "employee": 447}',
+        ST_SetSRID(ST_MakePoint(-80.373147, 25.760152), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG5',
-        '{"student": 1611, "faculty": 234}',
-        ST_SetSRID(ST_MakePoint(-80.371665, 25.760223), 4326)::geography
+        '{"student": 1611, "employee": 234}',
+        ST_SetSRID(ST_MakePoint(-80.371652, 25.760132), 4326)::geography
       ) ON CONFLICT DO NOTHING;
-
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG6',
-        '{"student": 1747, "faculty": 232}',
-        ST_SetSRID(ST_MakePoint(-80.374534, 25.760180), 4326)::geography
+        '{"student": 1747, "employee": 232}',
+        ST_SetSRID(ST_MakePoint(-80.374578, 25.760147), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Parkview',
+        '{"total": 293}',
+        ST_SetSRID(ST_MakePoint(-80.377257, 25.754591), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 1',
+        '{"total": 294}',
+        ST_SetSRID(ST_MakePoint(-80.370383, 25.760132), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 3',
+        '{"total": 205}',
+        ST_SetSRID(ST_MakePoint(-80.370555, 25.755151), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 4',
+        '{"total": 213}',
+        ST_SetSRID(ST_MakePoint(-80.371022, 25.753721), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 5',
+        '{"total": 505}',
+        ST_SetSRID(ST_MakePoint(-80.370663, 25.752716), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 7',
+        '{"total": 382}',
+        ST_SetSRID(ST_MakePoint(-80.380421, 25.752813), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 9',
+        '{"total": 584}',
+        ST_SetSRID(ST_MakePoint(-80.378111, 25.758499), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 10',
+        '{"total": 235}',
+        ST_SetSRID(ST_MakePoint(-80.381231, 25.757195), 4326)::geography
+      ) ON CONFLICT DO NOTHING;
+      INSERT INTO parking_facility (name, max_occupancy, location_geog)
+      VALUES (
+        'Lot 13',
+        '{"total": 77}',
+        ST_SetSRID(ST_MakePoint(-80.376315, 25.755108), 4326)::geography
       ) ON CONFLICT DO NOTHING;
     `.simple();
   } catch (error: any) {
