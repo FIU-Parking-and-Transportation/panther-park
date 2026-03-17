@@ -112,6 +112,36 @@ export const SEED_DATABASE = query(async () => {
         ORDER BY distance_m;
       $$;
 
+      CREATE OR REPLACE VIEW v_parking_facility_occupancy AS
+      SELECT
+        pf.id   AS id,
+        pf.name AS name,
+        pf.max_occupancy,
+
+        CASE
+          /* Case 1: max_occupancy is split into student/employee */
+          WHEN pf.max_occupancy ? 'student'
+          AND pf.max_occupancy ? 'employee' THEN
+          jsonb_build_object(
+          'student', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%entry%')
+          -
+          COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%exit%')), 
+          'employee', ( COUNT(*) FILTER ( WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%entry%')
+          -
+          COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%exit%')))
+
+          /* Case 2: max_occupancy is total only */
+          WHEN pf.max_occupancy ? 'total' THEN
+          jsonb_build_object('total', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%entry%')
+          -
+          COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%exit%')))
+
+          ELSE
+          NULL
+        END AS current_occupancy
+
+      FROM parking_facility pf JOIN lpr_read lr ON lr.parking_facility_id = pf.id
+      GROUP BY pf.id, pf.name, pf.max_occupancy;
     `.simple();
   } catch (error: any) {
     if (error instanceof SQL.PostgresError) {

@@ -7,7 +7,6 @@ interface FacilityOccupancy {
   name: string;
   occupancy: {};
   max_occupancy: {};
-  updated_at: string;
 }
 
 interface FacilityLocation {
@@ -43,21 +42,12 @@ export const getFacilityList = query(async (): Promise<FacilityListItem[]> => {
 });
 
 export const getFacilityOccupancy = query(
-  v.pipe(v.string(), v.uuid()),
-  async (facilityId: string): Promise<FacilityOccupancy | null> => {
+  async (): Promise<FacilityOccupancy[] | null> => {
     try {
       const result = await sql`
-        SELECT
-          id,
-          name,
-          occupancy,
-          max_occupancy,
-          updated_at
-        FROM parking_facility
-        WHERE id = ${facilityId}
-      `;
-
-      return result.length > 0 ? (result[0] as FacilityOccupancy) : null;
+        SELECT * FROM v_parking_facility_occupancy;
+      `.simple();
+      return result.length > 0 ? (result as FacilityOccupancy[]) : null;
     } catch (error: any) {
       if (error instanceof SQL.PostgresError) {
         console.error("Internal SQL error:", error.code, error.detail);
@@ -69,8 +59,7 @@ export const getFacilityOccupancy = query(
 );
 
 export const getFacilityLocation = query(
-  v.pipe(v.string(), v.uuid()),
-  async (facilityId: string): Promise<FacilityLocation | null> => {
+  async (): Promise<FacilityLocation[] | null> => {
     try {
       const result = await sql`
         SELECT
@@ -78,10 +67,8 @@ export const getFacilityLocation = query(
           name,
           ST_AsGeoJSON(location_geog::geometry)::jsonb as location_geog
         FROM parking_facility
-        WHERE id = ${facilityId}
       `;
-
-      return result.length > 0 ? (result[0] as FacilityLocation) : null;
+      return result.length > 0 ? (result as FacilityLocation[]) : null;
     } catch (error: any) {
       if (error instanceof SQL.PostgresError) {
         console.error("Internal SQL error:", error.code, error.detail);
