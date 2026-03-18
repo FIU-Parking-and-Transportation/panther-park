@@ -1,42 +1,69 @@
-# sv
+# Panther Park
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Panther Park is Florida International University's parking analytics platform.
+The system provides real-time parking occupancy tracking, license plate
+recognition (LPR) integration, and data-driven insights for campus parking
+management.
 
-## Creating a project
+## Project Structure
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
+```
+src/
+├── routes/
+│   ├── db/operations/
+│   │   ├── data.remote.ts      # Database operations and queries
+│   │   └── +page.svelte        # Database management UI
+│   ├── signage/
+│   │   └── +page.svelte        # Digital signage templates
+│   ├── +layout.svelte          # Root layout
+│   └── +page.svelte            # Home page
+├── hooks.server.ts             # Server-side middleware
+└── routes/layout.css           # Global styles
 ```
 
-To recreate this project with the same configuration:
+## Technologies Used
 
-```sh
-# recreate this project
-bun x sv create --template minimal --types ts --add tailwindcss="plugins:none" sveltekit-adapter="adapter:node" --install bun panther-park
-```
+### Framework & Build
 
-## Developing
+- SvelteKit 2 with Svelte 5: Full-stack web framework
+- Vite 7.3.1: Build tool and dev server
+- Bun: Runtime and package manager (via `svelte-adapter-bun`)
+- valibot: Schema validation
+- TypeScript
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### UI
 
-```sh
-npm run dev
+- shadcn-svelte
+- Tailwind CSS, tw-animate-css
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+### Database
 
-## Building
+- PostgreSQL with PostGIS: Geospatial database
+- Bun SQL: Native SQL queries with TypeScript support
 
-To create a production version of your app:
+### Data Visualization
 
-```sh
-npm run build
-```
+- layerchart 2.0.0: Charting library for analytics
 
-You can preview the production build with `npm run preview`.
+## Database Schema
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### Tables
+
+- parking_facility: Parking garage and lot information with geospatial data
+- parking_occupancy_history: Historical occupancy records
+- lpr_read: License plate recognition captures from fixed cameras
+- patroller_read: Mobile patroller LPR captures
+
+### Key Features
+
+- Geospatial queries using PostGIS for nearest facility lookups
+- JSONB columns for flexible occupancy tracking (student/employee splits)
+- Automatic entry/exit counting via camera name pattern matching
+- Automated digital signage for real-time alerts and parking information
+
+## TODO
+
+- [ ] Migrate signage templates
+- [ ] Implement S3 for LPR captures
+- [ ] Build admin dashboard
+- [ ] Add authentication with OIDC
