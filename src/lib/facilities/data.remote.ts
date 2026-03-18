@@ -2,11 +2,15 @@ import * as v from "valibot";
 import { query } from "$app/server";
 import { sql, SQL } from "bun";
 
-interface FacilityOccupancy {
+export interface FacilityOccupancy {
   id: string;
   name: string;
-  occupancy: {};
-  max_occupancy: {};
+  current_occupancy: {
+    [key: string]: number;
+  };
+  max_occupancy: {
+    [key: string]: number;
+  };
 }
 
 interface FacilityLocation {
