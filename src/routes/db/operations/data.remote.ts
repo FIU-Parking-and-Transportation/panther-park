@@ -10,8 +10,8 @@ export const SEED_DATABASE = query(async () => {
       CREATE TABLE IF NOT EXISTS parking_facility (
         id            uuid DEFAULT uuidv7() PRIMARY KEY,
         name          text NOT NULL UNIQUE,
-        occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "employee": 0}'::jsonb,
-        max_occupancy jsonb NOT NULL DEFAULT '{"student": 0, "employee": 0}'::jsonb,
+        occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
+        max_occupancy jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
         location_geog       geography(POINT, 4326) NOT NULL,
         updated_at      timestamptz NOT NULL DEFAULT now(),
         created_at    timestamptz NOT NULL DEFAULT now()
@@ -119,14 +119,14 @@ export const SEED_DATABASE = query(async () => {
         pf.max_occupancy,
 
         CASE
-          /* Case 1: max_occupancy is split into student/employee */
+          /* Case 1: max_occupancy is split into student/other */
           WHEN pf.max_occupancy ? 'student'
-          AND pf.max_occupancy ? 'employee' THEN
+          AND pf.max_occupancy ? 'other' THEN
           jsonb_build_object(
           'student', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%entry%')
           -
           COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%exit%')), 
-          'employee', ( COUNT(*) FILTER ( WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%entry%')
+          'other', ( COUNT(*) FILTER ( WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%entry%')
           -
           COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%exit%')))
 
@@ -160,37 +160,37 @@ export const insertGarages = query(async () => {
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG1',
-        '{"student": 576, "employee": 425}',
+        '{"student": 576, "other": 425}',
         ST_SetSRID(ST_MakePoint(-80.372083, 25.754794), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG2',
-        '{"student": 616, "employee": 345}',
+        '{"student": 616, "other": 345}',
         ST_SetSRID(ST_MakePoint(-80.372089, 25.753842), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG3',
-        '{"student": 1202, "employee": 231}',
+        '{"student": 1202, "other": 231}',
         ST_SetSRID(ST_MakePoint(-80.379818, 25.758427), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG4',
-        '{"student": 995, "employee": 447}',
+        '{"student": 995, "other": 447}',
         ST_SetSRID(ST_MakePoint(-80.373147, 25.760152), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG5',
-        '{"student": 1611, "employee": 234}',
+        '{"student": 1611, "other": 234}',
         ST_SetSRID(ST_MakePoint(-80.371652, 25.760132), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
         'PG6',
-        '{"student": 1747, "employee": 232}',
+        '{"student": 1747, "other": 232}',
         ST_SetSRID(ST_MakePoint(-80.374578, 25.760147), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)

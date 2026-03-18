@@ -3,7 +3,7 @@ import { getFacilityOccupancy, type FacilityOccupancy } from '$lib/facilities/da
 
 const facilities = await getFacilityOccupancy();
 console.log(facilities);
-function calcPercentage(facility: FacilityOccupancy, type: "student" | "employee"): number {
+function calcPercentage(facility: FacilityOccupancy, type: "student" | "other"): number {
   const curr = facility.current_occupancy[type];
   const max = facility.max_occupancy[type];
   if (curr <= 0){
@@ -42,7 +42,7 @@ function calcPercentage(facility: FacilityOccupancy, type: "student" | "employee
     {@render header()}
     {#each facilities as facility}
       {#if facility.name.includes("PG")}
-        {@render countRow(facility.name, calcPercentage(facility, "student"), calcPercentage(facility, "employee"))}
+        {@render countRow(facility.name, calcPercentage(facility, "student"), calcPercentage(facility, "other"))}
       {/if}
     {/each}
   </div>

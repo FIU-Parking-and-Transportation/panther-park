@@ -57,7 +57,7 @@ src/
 ### Key Features
 
 - Geospatial queries using PostGIS for nearest facility lookups
-- JSONB columns for flexible occupancy tracking (student/employee splits)
+- JSONB columns for flexible occupancy tracking (student/other splits)
 - Automatic entry/exit counting via camera name pattern matching
 - Automated digital signage for real-time alerts and parking information
 
