@@ -2,6 +2,8 @@
 
 @import "tw-animate-css";
 
+@import "@fontsource-variable/montserrat";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -119,4 +121,3 @@
     @apply bg-background text-foreground;
   }
 }
-

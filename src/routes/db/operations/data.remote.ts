@@ -161,37 +161,37 @@ export const insertGarages = query(async () => {
     await sql`
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG1',
+        'PG1: Gold Garage',
         '{"student": 576, "other": 425}',
         ST_SetSRID(ST_MakePoint(-80.372083, 25.754794), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG2',
+        'PG2: Blue Garage',
         '{"student": 616, "other": 345}',
         ST_SetSRID(ST_MakePoint(-80.372089, 25.753842), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG3',
+        'PG3: Panther Garage',
         '{"student": 1202, "other": 231}',
         ST_SetSRID(ST_MakePoint(-80.379818, 25.758427), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG4',
+        'PG4: Red Garage',
         '{"student": 995, "other": 447}',
         ST_SetSRID(ST_MakePoint(-80.373147, 25.760152), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG5',
+        'PG5: Market Station',
         '{"student": 1611, "other": 234}',
         ST_SetSRID(ST_MakePoint(-80.371652, 25.760132), 4326)::geography
       ) ON CONFLICT DO NOTHING;
       INSERT INTO parking_facility (name, max_occupancy, location_geog)
       VALUES (
-        'PG6',
+        'PG6: Tech Station',
         '{"student": 1747, "other": 232}',
         ST_SetSRID(ST_MakePoint(-80.374578, 25.760147), 4326)::geography
       ) ON CONFLICT DO NOTHING;
