@@ -49,7 +49,8 @@ export const getFacilityOccupancy = query(
   async (): Promise<FacilityOccupancy[] | null> => {
     try {
       const result = await sql`
-        SELECT * FROM v_parking_facility_occupancy;
+        SELECT * FROM v_parking_facility_occupancy
+        ORDER BY name;
       `.simple();
       return result.length > 0 ? (result as FacilityOccupancy[]) : null;
     } catch (error: any) {
@@ -71,6 +72,7 @@ export const getFacilityLocation = query(
           name,
           ST_AsGeoJSON(location_geog::geometry)::jsonb as location_geog
         FROM parking_facility
+        ORDER BY name;
       `;
       return result.length > 0 ? (result as FacilityLocation[]) : null;
     } catch (error: any) {
