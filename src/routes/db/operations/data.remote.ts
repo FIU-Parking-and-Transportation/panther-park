@@ -64,7 +64,7 @@ export const SEED_DATABASE = query(async () => {
         CONSTRAINT chk_state_len CHECK (state IS NULL OR char_length(state) = 2)
       );
 
-      CREATE INDEX IF NOT EXISTS lpr_read_vehicle_id_idx
+      CREATE INDEX IF NOT EXISTS lpr_read_camera_name_idx
       ON lpr_read (camera_name);
       CREATE INDEX IF NOT EXISTS lpr_read_plate_idx
       ON lpr_read (plate);
@@ -112,7 +112,8 @@ export const SEED_DATABASE = query(async () => {
         ORDER BY distance_m;
       $$;
 
-      CREATE OR REPLACE VIEW v_parking_facility_occupancy AS
+      DROP MATERIALIZED VIEW IF EXISTS v_parking_facility_occupancy;
+      CREATE MATERIALIZED VIEW v_parking_facility_occupancy AS
       SELECT
         pf.id   AS id,
         pf.name AS name,
@@ -141,7 +142,8 @@ export const SEED_DATABASE = query(async () => {
         END AS current_occupancy
 
       FROM parking_facility pf JOIN lpr_read lr ON lr.parking_facility_id = pf.id
-      GROUP BY pf.id, pf.name, pf.max_occupancy;
+      GROUP BY pf.id, pf.name, pf.max_occupancy
+      WITH DATA;
     `.simple();
   } catch (error: any) {
     if (error instanceof SQL.PostgresError) {
