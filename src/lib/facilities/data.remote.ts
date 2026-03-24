@@ -2,6 +2,7 @@ import * as v from "valibot";
 import { query } from "$app/server";
 import { sql, SQL } from "bun";
 import { error } from "@sveltejs/kit";
+import { LOG_LEVEL } from "$env/static/private";
 
 export interface FacilityOccupancy {
   id: string;
@@ -126,11 +127,11 @@ export const insertLegacyOccupancy = query(
       if (zoneName.match(/PG[0-9]/)){
         if (zoneName.toLowerCase().includes("lvls 1")) {
           const m = zoneName.match(/PG[0-9]/);
-          if (m) name = m[0];
+          if (m) name = m[0] + "%";
           type = "other";
         } else if (zoneName.toLowerCase().includes("lvls 3")) {
           const m = zoneName.match(/PG[0-9]/);
-          if (m) name = m[0];
+          if (m) name = m[0] + "%";
           type = "student";
         }
       } else if (zoneName.toLowerCase().includes("lot")) {
@@ -140,10 +141,11 @@ export const insertLegacyOccupancy = query(
       } else {
         throw new Error('Unmatched facility name: ' + zoneName);
       }
+      if (LOG_LEVEL == "debug") console.log("DEBUG: Inserting legacy count:\nzoneName:", zoneName, "name:", name, "countType:", type, "count:", count);
       const result = await sql`
         UPDATE parking_facility
         SET occupancy = jsonb_set(occupancy, ARRAY[${type}]::text[], to_jsonb(${count})),
-        updated_at = ${facility.TimestampUtc}::timestamptz -- FIXME: PG* timestamps are not updated
+        updated_at = ${facility.TimestampUtc}::timestamptz
         WHERE name ILIKE ${name};
         `;
       return result;
