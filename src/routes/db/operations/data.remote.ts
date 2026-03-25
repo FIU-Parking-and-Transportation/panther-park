@@ -117,32 +117,32 @@ export const SEED_DATABASE = query(async () => {
       SELECT
         pf.id   AS id,
         pf.name AS name,
-        pf.max_occupancy,
-
-        CASE
-          /* Case 1: max_occupancy is split into student/other */
-          WHEN pf.max_occupancy ? 'student'
-          AND pf.max_occupancy ? 'other' THEN
-          jsonb_build_object(
-          'student', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%entry%')
-          -
-          COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%exit%')), 
-          'other', ( COUNT(*) FILTER ( WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%entry%')
-          -
-          COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%exit%')))
-
-          /* Case 2: max_occupancy is total only */
-          WHEN pf.max_occupancy ? 'total' THEN
-          jsonb_build_object('total', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%entry%')
-          -
-          COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%exit%')))
-
-          ELSE
-          NULL
-        END AS current_occupancy
-
-      FROM parking_facility pf JOIN lpr_read lr ON lr.parking_facility_id = pf.id
-      GROUP BY pf.id, pf.name, pf.max_occupancy
+        -- CASE
+        --   /* Case 1: max_occupancy is split into student/other */
+        --   WHEN pf.max_occupancy ? 'student'
+        --   AND pf.max_occupancy ? 'other' THEN
+        --   jsonb_build_object(
+        --   'student', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%entry%')
+        --   -
+        --   COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 3%' AND lr.camera_name ILIKE '%exit%')), 
+        --   'other', ( COUNT(*) FILTER ( WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%entry%')
+        --   -
+        --   COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%lvl 1%' AND lr.camera_name ILIKE '%exit%')))
+        --
+        --   /* Case 2: max_occupancy is total only */
+        --   WHEN pf.max_occupancy ? 'total' THEN
+        --   jsonb_build_object('total', (COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%entry%')
+        --   -
+        --   COUNT(*) FILTER (WHERE lr.camera_name ILIKE '%exit%')))
+        --
+        --   ELSE
+        --   NULL
+        -- END AS occupancy
+        pf.occupancy,-- NOTE: using legacy counts for now 
+        pf.max_occupancy 
+      --FROM parking_facility pf JOIN lpr_read lr ON lr.parking_facility_id = pf.id
+      FROM parking_facility pf
+      GROUP BY pf.id, pf.name, pf.occupancy, pf.max_occupancy
       WITH DATA;
     `.simple();
   } catch (error: any) {

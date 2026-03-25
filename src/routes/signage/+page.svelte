@@ -3,7 +3,7 @@ import { getFacilityOccupancy, type FacilityOccupancy } from '$lib/facilities/da
 
 const facilities = $state(await getFacilityOccupancy());
 function calcPercentage(facility: FacilityOccupancy, type: "student" | "other"): number {
-  const curr = facility.current_occupancy[type];
+  const curr = facility.occupancy[type];
   const max = facility.max_occupancy[type];
   if (curr <= 0){
     return 0;

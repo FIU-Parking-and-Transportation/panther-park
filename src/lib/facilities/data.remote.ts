@@ -7,7 +7,7 @@ import { LOG_LEVEL } from "$env/static/private";
 export interface FacilityOccupancy {
   id: string;
   name: string;
-  current_occupancy: {
+  occupancy: {
     [key: string]: number;
   };
   max_occupancy: {
@@ -138,9 +138,7 @@ export const insertLegacyOccupancy = query(
         const m = zoneName.match(/Lot [0-9][0-9]*/);
         if (m) name = m[0];
         type = "total";
-      } else {
-        throw new Error('Unmatched facility name: ' + zoneName);
-      }
+      } 
       if (LOG_LEVEL == "debug") console.log("DEBUG: Inserting legacy count:\nzoneName:", zoneName, "name:", name, "countType:", type, "count:", count);
       const result = await sql`
         UPDATE parking_facility
@@ -150,7 +148,10 @@ export const insertLegacyOccupancy = query(
         `;
       return result;
     });
-    const results = await Promise.allSettled(promises);
+    const refreshViewPromise = await sql`
+      REFRESH MATERIALIZED VIEW v_parking_facility_occupancy;
+    `.simple();
+    const results = await Promise.allSettled(promises).then(refreshViewPromise);
     // TODO: return info on partial success 
     return {
       success: true,
