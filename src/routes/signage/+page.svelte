@@ -1,15 +1,25 @@
 <script lang="ts">
 import { getFacilityOccupancy, type FacilityOccupancy } from '$lib/facilities/data.remote';
+import { onMount } from 'svelte';
 
-const facilities = $state(await getFacilityOccupancy());
-function calcPercentage(facility: FacilityOccupancy, type: "student" | "other"): number {
+let facilities = $state(await getFacilityOccupancy());
+
+onMount(() => {
+  const interval = setInterval(async () => {
+    await getFacilityOccupancy().refresh();
+    facilities = await getFacilityOccupancy();
+  }, 3000);
+  return () => clearInterval(interval);
+})
+
+function calcPercentage( facility: FacilityOccupancy, type: "student" | "other" ): number {
   const curr = facility.occupancy[type];
   const max = facility.max_occupancy[type];
-  if (curr <= 0){
+  if (curr <= 0 || max <= 0) {
     return 0;
   }
-  const perc = Math.ceil(curr/max)
-  return perc > 100 ? 100 : perc
+  const percentage = Math.ceil((curr / max) * 100);
+  return Math.min(percentage, 100);
 }
 function getBarColor(percentage: number): string {
   if (percentage < 70) {
@@ -107,7 +117,7 @@ main {
   left: 0;
   right: 0;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-45%);
   text-align: center;
   color: white;
   font-size: 0.75rem;
