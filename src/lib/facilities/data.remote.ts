@@ -120,7 +120,7 @@ export const insertLegacyOccupancy = query(
 
     const promises = payload.OccupancyExport.ParkingOccupancies.Occupancy.map(async (facility) => {
       const zoneName = facility.ParkingZoneName;
-      const count = facility.Capacity - facility.Vehicles;
+      const count = facility.Vehicles;
       type countType = "student" | "other" | "total" | "";
       let name: string = "";
       let type: countType = "";
