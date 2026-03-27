@@ -74,9 +74,11 @@ function getBarColor(percentage: number): string {
 </main>
 
 <style>
+:global(body), :global(html){
+  overflow: hidden;
+}
 main {
   background-color: #081E3F;
-  overflow: hidden;
   font-size: 6cqb;
   font-family: 'Montserrat Variable', sans-serif;
   padding: 0px 5px 5px 5px;
