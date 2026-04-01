@@ -1,6 +1,5 @@
 <script lang="ts">
-import { SEED_DATABASE, insertGarages } from "./data.remote";
-let seedStatus: boolean | null = null;
+import { insertGarages } from "./data.remote";
 let insertStatus: boolean | null = null;
 let coord = "";
 function findClosestFacility(){
@@ -9,14 +8,6 @@ function findClosestFacility(){
 </script>
 
 <div class="h-screen flex flex-col items-center justify-center">
-  <button on:click={async () => {SEED_DATABASE().then((status) => {seedStatus = status}).catch(() => {seedStatus = false})}} class="">Seed Database</button>
-  {#if seedStatus === true}
-    <p>Database seeded successfully!</p>
-  {:else if seedStatus === false}
-    <p class="text-red-500">Database seed failed!</p>
-  {:else}
-    <p></p>
-  {/if}
   <button on:click={async () => {insertGarages().then((status) => {insertStatus = status}).catch(() => {insertStatus = false})}} class="">Insert Garages</button>
   {#if insertStatus === true}
     <p>Garages inserted successfully!</p>

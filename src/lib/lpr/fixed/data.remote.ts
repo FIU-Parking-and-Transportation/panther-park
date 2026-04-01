@@ -1,8 +1,11 @@
 import * as v from "valibot";
 import { query } from "$app/server";
-import { sql, SQL } from "bun";
+import { SQL } from "bun";
+import { sql } from "drizzle-orm";
 import { getFacilityList } from "$lib/facilities/data.remote";
 import { uploadBase64Image } from "$lib/s3";
+import { db } from "$lib/db";
+import { lprRead } from "$lib/db/schema";
 
 const lprReadPayloadSchema = v.object({
   Attributes: v.record(v.string(), v.string()),
@@ -32,6 +35,23 @@ const lprReadPayloadSchema = v.object({
   TimeUtc: v.string(),
 });
 
+function normalizeDate (date: string, time: string) {
+  const input = `${date} ${time} Etc/UTC`;
+  const [datePart, timePart] = input.split(" ");
+  const [month, day, year] = datePart.split("/").map(Number);
+  const [hour, minute, second] = timePart.split(":").map(Number);
+
+  const ts = new Date(Date.UTC(
+    year,
+    month - 1,
+    day,
+    hour,
+    minute,
+    second
+  ));
+  return ts;
+}
+
 async function dummyParkingFacility(): Promise<string> {
   // TODO: Remove this facility generator shim
   const facilities = await getFacilityList();
@@ -49,7 +69,6 @@ interface InsertLprReadResult {
 export const insertLprRead = query(
   lprReadPayloadSchema,
   async (payload: LprReadPayloadOutput): Promise<InsertLprReadResult> => {
-    const utcIso = `${payload.DateUtc} ${payload.TimeUtc} Etc/UTC`;
     const id = Bun.randomUUIDv7();
 
     // Upload all three images to S3 in parallel, keyed under the vehicle UUID.
@@ -73,44 +92,30 @@ export const insertLprRead = query(
     } // ISSUE: s3 upload and sql insert should be atomic
 
     try {
-      const result = await sql`
-        INSERT INTO lpr_read (
-          id,
-          attributes,
-          camera_name,
-          confidence_score,
-          context_image,
-          overview_image,
-          plate_image,
-          plate,
-          state,
-          vehicle_id,
-          parking_facility_id,
-          location_geog,
-          read_at
-        )
-        VALUES (
-          ${id},
-          ${JSON.stringify(payload.Attributes)},
-          ${payload.CameraName},
-          ${payload.ConfidenceScore},
-          ${contextImageUrl},
-          ${overviewImageUrl},
-          ${plateImageUrl},
-          ${payload.Plate},
-          NULLIF (${payload.State},''),
-          ${payload.VehicleID},
-          ${await dummyParkingFacility()},
-          ST_SetSRID(ST_MakePoint(${payload.Longitude}, ${payload.Latitude}), 4326)::geography,
-          ${utcIso}
-        )
-        RETURNING id;
-      `;
+      const facilityId = await dummyParkingFacility();
+      const rows = await db
+        .insert(lprRead)
+        .values({
+          id: id,
+          attributes: payload.Attributes,
+          cameraName: payload.CameraName,
+          confidenceScore: payload.ConfidenceScore,
+          contextImage: contextImageUrl,
+          overviewImage: overviewImageUrl,
+          plateImage: plateImageUrl,
+          plate: payload.Plate,
+          state: sql`NULLIF(${payload.State}, '')`,
+          vehicleId: payload.VehicleID,
+          parkingFacilityId: facilityId,
+          locationGeog: {x: payload.Longitude, y: payload.Latitude},
+          readAt: normalizeDate(payload.DateUtc, payload.TimeUtc),
+        })
+        .returning({ id: lprRead.id });
 
-      if (result.length > 0 && result[0].id) {
+      if (rows.length > 0 && rows[0].id) {
         return {
           success: true,
-          id: result[0].id as string,
+          id: rows[0].id,
         };
       }
 

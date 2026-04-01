@@ -1,2 +1,11 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+  import OccupancyRadial from "$lib/components/occupancy-radial.svelte";
+
+  const chartData = [
+    { category: "Student", value: 80, maxValue: 100 },
+    { category: "Other", value: 17, maxValue: 50 },
+  ];
+</script>
+
+<h1 style="text-align: center; font-size: 4cqb; font-weight: bold;">PG5</h1>
+<OccupancyRadial {chartData} />
