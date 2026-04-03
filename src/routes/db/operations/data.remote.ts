@@ -144,6 +144,15 @@ export const SEED_DATABASE = query(async () => {
       FROM parking_facility pf
       GROUP BY pf.id, pf.name, pf.occupancy, pf.max_occupancy
       WITH DATA;
+
+      CREATE TABLE IF NOT EXISTS digital_sign (
+        id              uuid DEFAULT uuidv7() PRIMARY KEY,
+        name            text NOT NULL UNIQUE,
+        attributes      jsonb NOT NULL DEFAULT '{}'::jsonb,
+        location_geog   geography(POINT, 4326) NOT NULL,
+        updated_at      timestamptz NOT NULL DEFAULT now(),
+        created_at      timestamptz NOT NULL DEFAULT now()
+      );
     `.simple();
   } catch (error: any) {
     if (error instanceof SQL.PostgresError) {
@@ -264,6 +273,81 @@ export const insertGarages = query(async () => {
         '{"total": 77}',
         ST_SetSRID(ST_MakePoint(-80.376315, 25.755108), 4326)::geography
       ) ON CONFLICT DO NOTHING;
+    `.simple();
+  } catch (error: any) {
+    if (error instanceof SQL.PostgresError) {
+      console.log(error.code);
+      console.log(error.detail);
+      console.log(error.hint);
+      return false;
+    }
+  }
+  return true;
+});
+
+export const insertSigns = query(async () => {
+  try {
+    await sql`
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('e840abf8-767f-439d-90ad-0aee196e4a83', '107th Ave', ST_SetSRID(ST_MakePoint(-80.3693, 25.7597), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', ST_SetSRID(ST_MakePoint(-80.3709, 25.7597), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('006be44d-fe24-472b-aece-de90517a3243', '109th Ave', ST_SetSRID(ST_MakePoint(-80.3725, 25.7608), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('dfc9c620-b917-4c1a-801b-a0295244dfa6', '112th Ave', ST_SetSRID(ST_MakePoint(-80.3762, 25.7602), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', ST_SetSRID(ST_MakePoint(-80.3707, 25.7545), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', ST_SetSRID(ST_MakePoint(-80.3707, 25.7606), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 President''s House', ST_SetSRID(ST_MakePoint(-80.3700, 25.7550), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('e51f3f5d-57ce-46ad-a2f7-c267f46ae6d7', 'Lot 3 SASC', ST_SetSRID(ST_MakePoint(-80.3709, 25.7563), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('1bd83594-2470-4650-8a1e-0f747d4dff50', 'Lot 5 North', ST_SetSRID(ST_MakePoint(-80.3711, 25.7533), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('1498c272-b2b9-432f-b97e-d4745aef332b', 'Lot 5 South', ST_SetSRID(ST_MakePoint(-80.3721, 25.7532), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('1fd130fa-20f6-4c13-b812-3f240066cd97', 'Lot 7 East', ST_SetSRID(ST_MakePoint(-80.3787, 25.7533), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('71140ca3-7d00-4ba9-a221-424f3da6986f', 'Lot 7 West', ST_SetSRID(ST_MakePoint(-80.3809, 25.7535), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('85f6f0d3-1f3f-4bd7-93dd-4185f105f343', 'Lot 9 Solar House', ST_SetSRID(ST_MakePoint(-80.3767, 25.7594), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('051683d8-681a-4e59-82c4-7ed7b7764be2', 'Lot 9 Traffic', ST_SetSRID(ST_MakePoint(-80.3788, 25.7580), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('c4b99c4c-b171-4342-8a59-d0452462ee87', 'Lot 9 West', ST_SetSRID(ST_MakePoint(-80.3790, 25.7589), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('d55ad231-f55b-41c3-b1ef-30f175b1d70c', 'PG3 Wall', ST_SetSRID(ST_MakePoint(-80.3793, 25.7585), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('235d784d-40ac-498c-b73a-0a6fff3d50d3', 'PG5 Wall', ST_SetSRID(ST_MakePoint(-80.3712, 25.7603), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('f4c3d563-c837-49f2-8915-b53937c5c622', 'PG6 East', ST_SetSRID(ST_MakePoint(-80.3739, 25.7598), 4326)::geography)
+      ON CONFLICT DO NOTHING;
+      INSERT INTO digital_sign (id, name, location_geog)
+      VALUES ('de8bff49-2272-44ef-84f7-d56624e1e536', 'PG6 West', ST_SetSRID(ST_MakePoint(-80.3753, 25.7596), 4326)::geography)
+      ON CONFLICT DO NOTHING;
     `.simple();
   } catch (error: any) {
     if (error instanceof SQL.PostgresError) {
