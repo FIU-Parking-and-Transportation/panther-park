@@ -25,3 +25,5 @@ vite.config.ts.timestamp-*
 # AI
 AGENTS.md
 opencode.json
+.agents
+skills-lock.json
