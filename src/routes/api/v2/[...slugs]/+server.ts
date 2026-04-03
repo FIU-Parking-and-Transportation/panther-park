@@ -1,4 +1,4 @@
-import openapi from "@elysiajs/openapi";
+import {openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, status, t } from "elysia";
 import { sql, SQL } from "bun";
 import { uploadBase64Image } from "$lib/s3";
@@ -43,8 +43,7 @@ async function randomFacilityId(): Promise<string> {
 // ---------------------------------------------------------------------------
 
 const app = new Elysia({ prefix: "/api/v2" })
-  .use(openapi())
-
+  .use(openapi({documentation: {info: { title: 'Panther Park API', version: '1.0.0'}}, references: fromTypes()}))
   // ── GET /api/v2/facilities ────────────────────────────────────────────────
   .get(
     "/facilities",
