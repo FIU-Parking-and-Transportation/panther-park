@@ -29,7 +29,7 @@ export interface FacilityOccupancy {
 }
 
 // ---------------------------------------------------------------------------
-// Helper – pick a random facility id (shim, mirrors v1 behaviour)
+// Helper – pick a random facility id 
 // ---------------------------------------------------------------------------
 
 async function randomFacilityId(): Promise<string> {
@@ -42,9 +42,9 @@ async function randomFacilityId(): Promise<string> {
 // Elysia app
 // ---------------------------------------------------------------------------
 
-const app = new Elysia({ prefix: "/api/v2" })
-  .use(openapi({documentation: {info: { title: 'Panther Park API', version: '1.0.0'}}, references: fromTypes()}))
-  // ── GET /api/v2/facilities ────────────────────────────────────────────────
+const app = new Elysia({ prefix: "/api/v1" })
+  .use(openapi({documentation: {info: { title: 'Panther Park API', version: '1.0.0'}}, references: fromTypes("src/routes/api/[...slugs]/+server.ts")}))
+  // ── GET /api/v1/facilities ────────────────────────────────────────────────
   .get(
     "/facilities",
     async () => {
@@ -72,7 +72,7 @@ const app = new Elysia({ prefix: "/api/v2" })
     },
   )
 
-  // ── GET /api/v2/facilities/locations ─────────────────────────────────────
+  // ── GET /api/v1/facilities/locations ─────────────────────────────────────
   .get(
     "/facilities/locations",
     async () => {
@@ -116,7 +116,7 @@ const app = new Elysia({ prefix: "/api/v2" })
     },
   )
 
-  // ── GET /api/v2/facilities/occupancy ──────────────────────────────────────
+  // ── GET /api/v1/facilities/occupancy ──────────────────────────────────────
   .get(
     "/facilities/occupancy",
     async () => {
@@ -154,7 +154,7 @@ const app = new Elysia({ prefix: "/api/v2" })
     },
   )
 
-  // ── POST /api/v2/facilities/occupancy ─────────────────────────────────────
+  // ── POST /api/v1/facilities/occupancy ─────────────────────────────────────
   .post(
     "/facilities/occupancy",
     async ({ body }) => {
@@ -231,7 +231,7 @@ const app = new Elysia({ prefix: "/api/v2" })
     },
   )
 
-  // ── POST /api/v2/lpr/read ─────────────────────────────────────────────────
+  // ── POST /api/v1/lpr/read ─────────────────────────────────────────────────
   .post(
     "/lpr/read",
     async ({ body }) => {

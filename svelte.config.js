@@ -8,7 +8,7 @@ const config = {
     adapter: adapter(), 
     experimental: { remoteFunctions: true },
     alias: {
-      'elysia-api': 'src/routes/api/v2/[...slugs]/+server.ts'
+      'elysia-api': 'src/routes/api/[...slugs]/+server.ts'
     }
   },
   compilerOptions: {

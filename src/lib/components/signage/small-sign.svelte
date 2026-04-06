@@ -33,8 +33,8 @@
     const api = treaty<App>(window.location.origin);
 
     async function fetchOccupancy() {
-      const { data, error } = await api.api.v2.facilities.occupancy.get();
-      if (error) return null;
+      const { data, error } = await api.api.v1.facilities.occupancy.get();
+      if (error) throw Error;
       return data;
     }
 
