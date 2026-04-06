@@ -159,6 +159,7 @@ const app = new Elysia({ prefix: "/api/v2" })
     "/facilities/occupancy",
     async ({ body }) => {
       const LOG_LEVEL = process.env.LOG_LEVEL;
+      if (LOG_LEVEL === "debug") console.log("DEBUG: Inserting legacy count:", body);
       const occupancies = body.OccupancyExport.ParkingOccupancies.Occupancy;
 
       const promises = occupancies.map(async (facility) => {
@@ -183,19 +184,6 @@ const app = new Elysia({ prefix: "/api/v2" })
           const m = zoneName.match(/Lot [0-9][0-9]*/);
           if (m) name = m[0];
           countType = "total";
-        }
-
-        if (LOG_LEVEL === "debug") {
-          console.log(
-            "DEBUG: Inserting legacy count:\nzoneName:",
-            zoneName,
-            "name:",
-            name,
-            "countType:",
-            countType,
-            "count:",
-            count,
-          );
         }
 
         return sql`
@@ -247,6 +235,9 @@ const app = new Elysia({ prefix: "/api/v2" })
   .post(
     "/lpr/read",
     async ({ body }) => {
+      const LOG_LEVEL = process.env.LOG_LEVEL;
+      if (LOG_LEVEL === "debug") console.log("DEBUG: Inserting lpr read:", body);
+
       const utcIso = `${body.DateUtc} ${body.TimeUtc} Etc/UTC`;
       const id = Bun.randomUUIDv7();
       const keyPrefix = `lpr/${id}`;
