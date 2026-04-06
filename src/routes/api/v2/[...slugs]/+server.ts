@@ -258,9 +258,6 @@ const app = new Elysia({ prefix: "/api/v2" })
       }
 
       try {
-        const confidenceScore = parseFloat(body.ConfidenceScore);
-        const latitude = parseFloat(body.Latitude);
-        const longitude = parseFloat(body.Longitude);
         const state =
           body.State.length === 2 ? body.State.toUpperCase() : null;
 
@@ -284,7 +281,7 @@ const app = new Elysia({ prefix: "/api/v2" })
             ${id},
             ${JSON.stringify(body.Attributes)},
             ${body.CameraName},
-            ${confidenceScore},
+            ${body.ConfidenceScore},
             ${contextImageUrl},
             ${overviewImageUrl},
             ${plateImageUrl},
@@ -292,7 +289,7 @@ const app = new Elysia({ prefix: "/api/v2" })
             ${state},
             ${body.VehicleID},
             ${await randomFacilityId()},
-            ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
+            ST_SetSRID(ST_MakePoint(${body.Longitude}, ${body.Latitude}), 4326)::geography,
             ${utcIso}
           )
           RETURNING id;
@@ -321,9 +318,9 @@ const app = new Elysia({ prefix: "/api/v2" })
         Attributes: t.Record(t.String(), t.String()),
         CameraName: t.String({ minLength: 1 }),
         ContextImage: t.String(),
-        ConfidenceScore: t.String(),
-        Latitude: t.String(),
-        Longitude: t.String(),
+        ConfidenceScore: t.Number(),
+        Latitude: t.Number(),
+        Longitude: t.Number(),
         OverviewImage: t.String(),
         Plate: t.String({ minLength: 1 }),
         PlateImage: t.String(),
