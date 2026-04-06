@@ -2,6 +2,7 @@ import {openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, status, t } from "elysia";
 import { sql, SQL } from "bun";
 import { uploadBase64Image } from "$lib/s3";
+import bearer from "@elysiajs/bearer";
 
 // ---------------------------------------------------------------------------
 // Shared interfaces
@@ -44,6 +45,7 @@ async function randomFacilityId(): Promise<string> {
 
 const app = new Elysia({ prefix: "/api/v1" })
   .use(openapi({documentation: {info: { title: 'Panther Park API', version: '1.0.0'}}, references: fromTypes("src/routes/api/[...slugs]/+server.ts")}))
+  .use(bearer())
   // ── GET /api/v1/facilities ────────────────────────────────────────────────
   .get(
     "/facilities",
@@ -153,6 +155,19 @@ const app = new Elysia({ prefix: "/api/v1" })
       detail: { summary: "Get facility occupancy" },
     },
   )
+
+  // ── POST routes (bearer token required) ──────────────────────────────────
+  .guard(
+    {
+      beforeHandle({ bearer, set, status }) {
+        const token = process.env.DB_OPERATIONS_TOKEN;
+        if (!token || bearer !== token) {
+          set.headers["WWW-Authenticate"] = `Bearer realm='api', error="invalid_token"`;
+          return status(401, "Unauthorized");
+        }
+      },
+    },
+    (app) => app
 
   // ── POST /api/v1/facilities/occupancy ─────────────────────────────────────
   .post(
@@ -378,7 +393,7 @@ const app = new Elysia({ prefix: "/api/v1" })
         return status(200, { success: true, message: "Database seeded successfully" });
       }
 
-      if (body.action === "seedGarages") {
+      if (body.action === "seedFacilities") {
         try {
           await sql`
             INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
@@ -594,11 +609,12 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
     {
       body: t.Object({
-        action: t.Union([t.Literal("seedDatabase"), t.Literal("seedGarages"), t.Literal("seedSigns")]),
+        action: t.Union([t.Literal("seedDatabase"), t.Literal("seedFacilities"), t.Literal("seedSigns")]),
       }),
       response: {
         200: t.Object({ success: t.Boolean(), message: t.String() }),
         400: t.Object({ success: t.Boolean(), message: t.String() }),
+        401: t.Object({ success: t.Boolean(), message: t.String() }),
         500: t.Object({ success: t.Boolean(), message: t.String() }),
       },
       detail: { summary: "Perform database operations" },
@@ -626,8 +642,7 @@ const app = new Elysia({ prefix: "/api/v1" })
           uploadBase64Image(`${keyPrefix}/overview.jpg`, body.OverviewImage),
           uploadBase64Image(`${keyPrefix}/plate.jpg`, body.PlateImage),
         ]);
-      } catch (error: any) {
-        console.error("S3 upload error:", error);
+      } catch (error: any) { console.error("S3 upload error:", error);
         return status(500, { error: "Failed to upload images to S3" });
       }
 
@@ -713,7 +728,7 @@ const app = new Elysia({ prefix: "/api/v1" })
       },
       detail: { summary: "Insert fixed-camera LPR plate read" },
     },
-  );
+  ));
 
 interface WithRequest {
   request: Request;
