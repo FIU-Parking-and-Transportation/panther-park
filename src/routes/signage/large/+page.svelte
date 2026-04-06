@@ -1,13 +1,24 @@
 <script lang="ts">
-import { getFacilityOccupancy, type FacilityOccupancy } from '$lib/facilities/data.remote';
 import { onMount } from 'svelte';
+import { treaty } from '@elysiajs/eden';
+import type { App } from 'elysia-api';
+import type { FacilityOccupancy } from 'elysia-api';
 
-let facilities = $state(await getFacilityOccupancy());
+let facilities = $state<FacilityOccupancy[] | null>(null);
 
 onMount(() => {
+  const api = treaty<App>(window.location.origin);
+
+  async function fetchOccupancy() {
+    const { data, error } = await api.api.v2.facilities.occupancy.get();
+    if (error) return null;
+    return data;
+  }
+
+  fetchOccupancy().then((d) => { facilities = d; });
+
   const interval = setInterval(async () => {
-    await getFacilityOccupancy().refresh();
-    facilities = await getFacilityOccupancy();
+    facilities = await fetchOccupancy();
   }, 3000);
   return () => clearInterval(interval);
 })
@@ -65,7 +76,7 @@ function getBarColor(percentage: number): string {
 <main>
   <div class="grid h-screen" style="grid-template-columns: 2fr 1fr 1fr;" >
     {@render header()}
-    {#each facilities as facility}
+    {#each facilities ?? [] as facility}
       {#if facility.name.includes("PG")}
         {@render countRow(facility.name, calcPercentage(facility, "student"), calcPercentage(facility, "other"))}
       {/if}

@@ -21,7 +21,7 @@ interface FacilityLocation {
   };
 }
 
-interface FacilityOccupancy {
+export interface FacilityOccupancy {
   id: string;
   name: string;
   occupancy: Record<string, number>;
@@ -344,5 +344,7 @@ const app = new Elysia({ prefix: "/api/v2" })
 interface WithRequest {
   request: Request;
 }
+
+export type App = typeof app;
 
 export const fallback = ({ request }: WithRequest) => app.handle(request);

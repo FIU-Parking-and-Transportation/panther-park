@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getFacilityList, getFacilityOccupancy } from "$lib/facilities/data.remote";
+  import { treaty } from "@elysiajs/eden";
+  import type { App } from "elysia-api";
+  import type { FacilityOccupancy } from "elysia-api";
   import paw from "$lib/assets/sticker-paw-solid-gold.svg";
 
   interface FacilityDisplay {
@@ -14,7 +16,7 @@
 
   let { garages }: Props = $props();
 
-  let rawData = $state(await getFacilityOccupancy());
+  let rawData = $state<FacilityOccupancy[] | null>(null);
 
   let facilities = $derived<FacilityDisplay[]>(
     (rawData ?? [])
@@ -28,9 +30,18 @@
   );
 
   onMount(() => {
+    const api = treaty<App>(window.location.origin);
+
+    async function fetchOccupancy() {
+      const { data, error } = await api.api.v2.facilities.occupancy.get();
+      if (error) return null;
+      return data;
+    }
+
+    fetchOccupancy().then((d) => { rawData = d; });
+
     const interval = setInterval(async () => {
-      await getFacilityOccupancy().refresh();
-      rawData = await getFacilityOccupancy();
+      rawData = await fetchOccupancy();
     }, 3000);
     return () => clearInterval(interval);
   });
