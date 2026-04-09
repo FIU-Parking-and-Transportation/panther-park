@@ -526,32 +526,32 @@ const app = new Elysia({ prefix: "/api/v1" })
           }
           throw error;
         }
-        return status(200, { success: true, message: "Garages seeded successfully" });
+        return status(200, { success: true, message: "Facilities seeded successfully" });
       }
 
       if (body.action === "seedSigns") {
         try {
           await sql`
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('e840abf8-767f-439d-90ad-0aee196e4a83', '107th Ave', '{"garages": [ "PG1", "PG2", "PG3", "PG4", "PG5", "PG6" ]}', ST_SetSRID(ST_MakePoint(-80.3693, 25.7597), 4326)::geography)
+            VALUES ('e840abf8-767f-439d-90ad-0aee196e4a83', '107th Ave', '{"facilities": [ "PG1", "PG2", "PG3", "PG4", "PG5", "PG6" ]}', ST_SetSRID(ST_MakePoint(-80.3693, 25.7597), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', '{"garages": [ "PG5", "Lot 1" ]}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7597), 4326)::geography)
+            VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', '{"facilities": [ "PG5", "Lot 1" ]}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7597), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('006be44d-fe24-472b-aece-de90517a3243', '109th Ave', '{"garages": [ "PG5", "PG4" ]}', ST_SetSRID(ST_MakePoint(-80.3725, 25.7608), 4326)::geography)
+            VALUES ('006be44d-fe24-472b-aece-de90517a3243', '109th Ave', '{"facilities": [ "PG5", "PG4" ]}', ST_SetSRID(ST_MakePoint(-80.3725, 25.7608), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('dfc9c620-b917-4c1a-801b-a0295244dfa6', '112th Ave', '{"garages": [ "PG6", "PG3" ]}', ST_SetSRID(ST_MakePoint(-80.3762, 25.7602), 4326)::geography)
+            VALUES ('dfc9c620-b917-4c1a-801b-a0295244dfa6', '112th Ave', '{"facilities": [ "PG6", "PG3" ]}', ST_SetSRID(ST_MakePoint(-80.3762, 25.7602), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', '{"garages": [ "PG2", "PG1" ]}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7545), 4326)::geography)
+            VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', '{"facilities": [ "PG2", "PG1" ]}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7545), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"garages": [ "Lot 1" ]}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7606), 4326)::geography)
+            VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"facilities": [ "Lot 1" ]}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7606), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"garages": [ "Lot 1" ]}', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography)
+            VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"facilities": [ "Lot 1" ]}', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
             VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 President''s House', '{}', ST_SetSRID(ST_MakePoint(-80.3700, 25.7550), 4326)::geography)

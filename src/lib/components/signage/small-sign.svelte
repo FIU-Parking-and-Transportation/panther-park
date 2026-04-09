@@ -11,16 +11,16 @@
   }
 
   interface Props {
-    garages: string[];
+    facilitiesProp: string[];
   }
 
-  let { garages }: Props = $props();
+  let { facilitiesProp }: Props = $props();
 
   let rawData = $state<FacilityOccupancy[] | null>(null);
 
   let facilities = $derived<FacilityDisplay[]>(
     (rawData ?? [])
-      .filter((f) => garages.includes(f.name.split(":")[0] || f.name.split(" ")[0]))
+      .filter((f) => facilitiesProp.includes(f.name.split(":")[0] || f.name.split(" ")[0]))
       .map((f) => ({
         name: f.name.split(":")[0] ?? f.name.split(" ")[0],
         count: Object.entries(f.occupancy)
