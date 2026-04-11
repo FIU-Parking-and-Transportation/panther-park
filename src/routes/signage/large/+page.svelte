@@ -24,7 +24,7 @@ onMount(() => {
 })
 
 function calcPercentage( facility: FacilityOccupancy, type: "student" | "other" ): number {
-  const curr = facility.occupancy[type];
+  const curr = facility.current_occupancy[type];
   const max = facility.max_occupancy[type];
   if (curr <= 0 || max <= 0) {
     return 0;

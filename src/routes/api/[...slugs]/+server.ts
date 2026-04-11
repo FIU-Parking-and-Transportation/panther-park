@@ -23,7 +23,7 @@ interface FacilityLocation {
 export interface FacilityOccupancy {
   id: string;
   name: string;
-  occupancy: Record<string, number>;
+  current_occupancy: Record<string, number>;
   max_occupancy: Record<string, number>;
 }
 
@@ -142,7 +142,7 @@ const app = new Elysia({ prefix: "/api/v1" })
           t.Object({
             id: t.String(),
             name: t.String(),
-            occupancy: t.Record(t.String(), t.Number()),
+            current_occupancy: t.Record(t.String(), t.Number()),
             max_occupancy: t.Record(t.String(), t.Number()),
           }),
         ),
@@ -201,7 +201,7 @@ const app = new Elysia({ prefix: "/api/v1" })
         return sql`
           UPDATE parking_facility
           SET
-            occupancy = jsonb_set(occupancy, ARRAY[${countType}]::text[], to_jsonb(${count})),
+            current_occupancy = jsonb_set(current_occupancy, ARRAY[${countType}]::text[], to_jsonb(${count})),
             updated_at = ${facility.TimestampUtc}::timestamptz
           WHERE name ILIKE ${name};
         `;
@@ -256,7 +256,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             CREATE TABLE IF NOT EXISTS parking_facility (
               id            uuid PRIMARY KEY,
               name          text NOT NULL UNIQUE,
-              occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
+              current_occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
               max_occupancy jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
               location_geog       geography(POINT, 4326) NOT NULL,
               updated_at      timestamptz NOT NULL DEFAULT now(),
@@ -363,10 +363,10 @@ const app = new Elysia({ prefix: "/api/v1" })
             SELECT
               pf.id   AS id,
               pf.name AS name,
-              pf.occupancy,-- NOTE: using legacy counts for now 
+              pf.current_occupancy,-- NOTE: using legacy counts for now 
               pf.max_occupancy 
             FROM parking_facility pf
-            GROUP BY pf.id, pf.name, pf.occupancy, pf.max_occupancy
+            GROUP BY pf.id, pf.name, pf.current_occupancy, pf.max_occupancy
             WITH DATA;
 
             CREATE TABLE IF NOT EXISTS digital_sign (
@@ -393,7 +393,7 @@ const app = new Elysia({ prefix: "/api/v1" })
       if (body.action === "seedFacilities") {
         try {
           await sql`
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '49b82e7a-9c50-4486-a946-fe4d8093ffd9',
               'PG1: Gold Garage',
@@ -401,7 +401,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"student": 576, "other": 425}',
               ST_SetSRID(ST_MakePoint(-80.372083, 25.754794), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '326db0dc-944d-4576-9346-0a935da30c63',
               'PG2: Blue Garage',
@@ -409,7 +409,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"student": 616, "other": 345}',
               ST_SetSRID(ST_MakePoint(-80.372089, 25.753842), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '098db415-c8f3-478b-b652-b45e41556d39',
               'PG3: Panther Garage',
@@ -417,7 +417,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"student": 1202, "other": 231}',
               ST_SetSRID(ST_MakePoint(-80.379818, 25.758427), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '9148e29e-32c3-4c49-81fa-c67db8021c5c',
               'PG4: Red Garage',
@@ -425,7 +425,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"student": 995, "other": 447}',
               ST_SetSRID(ST_MakePoint(-80.373147, 25.760152), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '20b0aade-772a-49de-8364-911c59cc2703',
               'PG5: Market Station',
@@ -433,7 +433,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"student": 1611, "other": 234}',
               ST_SetSRID(ST_MakePoint(-80.371652, 25.760132), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'deb719ca-6a2e-4660-9936-931be37ebb53',
               'PG6: Tech Station',
@@ -441,7 +441,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"student": 1747, "other": 232}',
               ST_SetSRID(ST_MakePoint(-80.374578, 25.760147), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'd3456a65-5c3b-4155-b7d1-3968e6821e76',
               'Parkview',
@@ -449,7 +449,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 293}',
               ST_SetSRID(ST_MakePoint(-80.377257, 25.754591), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '8eb591ab-26b7-4aed-9198-d3bed23a6772',
               'Lot 1',
@@ -457,7 +457,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 294}',
               ST_SetSRID(ST_MakePoint(-80.370383, 25.760132), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'bc8e761b-624e-4241-a4d5-7ab57712ea39',
               'Lot 3',
@@ -465,7 +465,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 205}',
               ST_SetSRID(ST_MakePoint(-80.370555, 25.755151), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'eb97232b-c223-4f61-bb19-5cf1db73fec8',
               'Lot 4',
@@ -473,7 +473,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 213}',
               ST_SetSRID(ST_MakePoint(-80.371022, 25.753721), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'ff7165da-ff04-4835-b411-2d0be172773e',
               'Lot 5',
@@ -481,7 +481,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 505}',
               ST_SetSRID(ST_MakePoint(-80.370663, 25.752716), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'e0c24509-cd3c-454e-b289-325455d2950d',
               'Lot 7',
@@ -489,7 +489,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 382}',
               ST_SetSRID(ST_MakePoint(-80.380421, 25.752813), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '73d0e63e-43a2-4bb1-98e3-325aad8b2d6d',
               'Lot 9',
@@ -497,7 +497,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 584}',
               ST_SetSRID(ST_MakePoint(-80.378111, 25.758499), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'a6c13e1d-872f-4225-99fe-b8195f514fbb',
               'Lot 10',
@@ -505,7 +505,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               '{"total": 235}',
               ST_SetSRID(ST_MakePoint(-80.381231, 25.757195), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '42de29ee-1955-419d-aca0-5ddce2028715',
               'Lot 13',
