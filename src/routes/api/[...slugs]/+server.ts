@@ -16,10 +16,8 @@ interface FacilityListItem {
 interface FacilityLocation {
   id: string;
   name: string;
-  location_geog: {
-    type: string;
-    coordinates: [number, number];
-  };
+  latitude: number;
+  longitude: number;
 }
 
 export interface FacilityOccupancy {
@@ -83,7 +81,8 @@ const app = new Elysia({ prefix: "/api/v1" })
           SELECT
             id,
             name,
-            ST_AsGeoJSON(location_geog::geometry)::jsonb AS location_geog
+            ST_Y(location_geog::geometry) AS latitude,
+            ST_X(location_geog::geometry) AS longitude
           FROM parking_facility
           ORDER BY name;
         `;
@@ -105,10 +104,8 @@ const app = new Elysia({ prefix: "/api/v1" })
           t.Object({
             id: t.String(),
             name: t.String(),
-            location_geog: t.Object({
-              type: t.String(),
-              coordinates: t.Tuple([t.Number(), t.Number()]),
-            }),
+            latitude: t.Number(),
+            longitude: t.Number(),
           }),
         ),
         404: t.Object({ error: t.String() }),
