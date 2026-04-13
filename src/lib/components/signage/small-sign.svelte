@@ -20,9 +20,9 @@
 
   let facilities = $derived<FacilityDisplay[]>(
     (rawData ?? [])
-      .filter((f) => facilitiesProp.includes(f.name.split(":")[0] || f.name.split(" ")[0]))
+      .filter((f) => facilitiesProp.includes(f.name))
       .map((f) => ({
-        name: f.name.split(":")[0] ?? f.name.split(" ")[0],
+        name: f.name,
         count: Object.entries(f.current_occupancy)
           .filter(([key, value]) => !(value <= 0 && (f.max_occupancy[key] ?? 0) <= 0))
           .map(([key, value]) => ({ name: key, value })),

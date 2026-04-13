@@ -78,7 +78,7 @@ function getBarColor(percentage: number): string {
     {@render header()}
     {#each facilities ?? [] as facility}
       {#if facility.name.includes("PG")}
-        {@render countRow(facility.name, calcPercentage(facility, "student"), calcPercentage(facility, "other"))}
+        {@render countRow(facility.full_name, calcPercentage(facility, "student"), calcPercentage(facility, "other"))}
       {/if}
     {/each}
   </div>

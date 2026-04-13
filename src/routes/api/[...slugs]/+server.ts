@@ -11,11 +11,13 @@ import bearer from "@elysiajs/bearer";
 interface FacilityListItem {
   id: string;
   name: string;
+  full_name: string;
 }
 
 interface FacilityLocation {
   id: string;
   name: string;
+  full_name: string;
   latitude: number;
   longitude: number;
 }
@@ -23,6 +25,7 @@ interface FacilityLocation {
 export interface FacilityOccupancy {
   id: string;
   name: string;
+  full_name: string;
   current_occupancy: Record<string, number>;
   max_occupancy: Record<string, number>;
 }
@@ -50,7 +53,7 @@ const app = new Elysia({ prefix: "/api/v1" })
     async () => {
       try {
         const rows = await sql`
-          SELECT id, name
+          SELECT id, name, full_name
           FROM parking_facility
           ORDER BY name;
         `;
@@ -65,7 +68,7 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
     {
       response: {
-        200: t.Array(t.Object({ id: t.String(), name: t.String() })),
+        200: t.Array(t.Object({ id: t.String(), name: t.String(), full_name: t.String() })),
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "List parking facilities" },
@@ -81,6 +84,7 @@ const app = new Elysia({ prefix: "/api/v1" })
           SELECT
             id,
             name,
+            full_name,
             ST_Y(location_geog::geometry) AS latitude,
             ST_X(location_geog::geometry) AS longitude
           FROM parking_facility
@@ -104,6 +108,7 @@ const app = new Elysia({ prefix: "/api/v1" })
           t.Object({
             id: t.String(),
             name: t.String(),
+            full_name: t.String(),
             latitude: t.Number(),
             longitude: t.Number(),
           }),
@@ -142,6 +147,7 @@ const app = new Elysia({ prefix: "/api/v1" })
           t.Object({
             id: t.String(),
             name: t.String(),
+            full_name: t.String(),
             current_occupancy: t.Record(t.String(), t.Number()),
             max_occupancy: t.Record(t.String(), t.Number()),
           }),
@@ -254,13 +260,14 @@ const app = new Elysia({ prefix: "/api/v1" })
             CREATE EXTENSION IF NOT EXISTS postgis;
 
             CREATE TABLE IF NOT EXISTS parking_facility (
-              id            uuid PRIMARY KEY,
-              name          text NOT NULL UNIQUE,
-              current_occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
-              max_occupancy jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
-              location_geog       geography(POINT, 4326) NOT NULL,
-              updated_at      timestamptz NOT NULL DEFAULT now(),
-              created_at    timestamptz NOT NULL DEFAULT now()
+              id                uuid PRIMARY KEY,
+              name              text NOT NULL UNIQUE,
+              full_name         text NOT NULL,
+              current_occupancy jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
+              max_occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
+              location_geog     geography(POINT, 4326) NOT NULL,
+              updated_at        timestamptz NOT NULL DEFAULT now(),
+              created_at        timestamptz NOT NULL DEFAULT now()
             );
             
             CREATE TABLE IF NOT EXISTS parking_occupancy_history (
@@ -363,10 +370,11 @@ const app = new Elysia({ prefix: "/api/v1" })
             SELECT
               pf.id   AS id,
               pf.name AS name,
+              pf.full_name AS full_name,
               pf.current_occupancy,-- NOTE: using legacy counts for now 
               pf.max_occupancy 
             FROM parking_facility pf
-            GROUP BY pf.id, pf.name, pf.current_occupancy, pf.max_occupancy
+            GROUP BY pf.id, pf.name, pf.full_name, pf.current_occupancy, pf.max_occupancy
             WITH DATA;
 
             CREATE TABLE IF NOT EXISTS digital_sign (
@@ -393,121 +401,136 @@ const app = new Elysia({ prefix: "/api/v1" })
       if (body.action === "seedFacilities") {
         try {
           await sql`
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '49b82e7a-9c50-4486-a946-fe4d8093ffd9',
+              'PG1',
               'PG1: Gold Garage',
               '{"student": 0, "other": 0}',
               '{"student": 576, "other": 425}',
               ST_SetSRID(ST_MakePoint(-80.372083, 25.754794), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '326db0dc-944d-4576-9346-0a935da30c63',
+              'PG2',
               'PG2: Blue Garage',
               '{"student": 0, "other": 0}',
               '{"student": 616, "other": 345}',
               ST_SetSRID(ST_MakePoint(-80.372089, 25.753842), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '098db415-c8f3-478b-b652-b45e41556d39',
+              'PG3',
               'PG3: Panther Garage',
               '{"student": 0, "other": 0}',
               '{"student": 1202, "other": 231}',
               ST_SetSRID(ST_MakePoint(-80.379818, 25.758427), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '9148e29e-32c3-4c49-81fa-c67db8021c5c',
+              'PG4',
               'PG4: Red Garage',
               '{"student": 0, "other": 0}',
               '{"student": 995, "other": 447}',
               ST_SetSRID(ST_MakePoint(-80.373147, 25.760152), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '20b0aade-772a-49de-8364-911c59cc2703',
+              'PG5',
               'PG5: Market Station',
               '{"student": 0, "other": 0}',
               '{"student": 1611, "other": 234}',
               ST_SetSRID(ST_MakePoint(-80.371652, 25.760132), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'deb719ca-6a2e-4660-9936-931be37ebb53',
+              'PG6',
               'PG6: Tech Station',
               '{"student": 0, "other": 0}',
               '{"student": 1747, "other": 232}',
               ST_SetSRID(ST_MakePoint(-80.374578, 25.760147), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'd3456a65-5c3b-4155-b7d1-3968e6821e76',
+              'PV',
               'Parkview',
               '{"total": 0}',
               '{"total": 293}',
               ST_SetSRID(ST_MakePoint(-80.377257, 25.754591), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '8eb591ab-26b7-4aed-9198-d3bed23a6772',
+              'Lot 1',
               'Lot 1',
               '{"total": 0}',
               '{"total": 294}',
               ST_SetSRID(ST_MakePoint(-80.370383, 25.760132), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'bc8e761b-624e-4241-a4d5-7ab57712ea39',
+              'Lot 3',
               'Lot 3',
               '{"total": 0}',
               '{"total": 205}',
               ST_SetSRID(ST_MakePoint(-80.370555, 25.755151), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'eb97232b-c223-4f61-bb19-5cf1db73fec8',
+              'Lot 4',
               'Lot 4',
               '{"total": 0}',
               '{"total": 213}',
               ST_SetSRID(ST_MakePoint(-80.371022, 25.753721), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'ff7165da-ff04-4835-b411-2d0be172773e',
+              'Lot 5',
               'Lot 5',
               '{"total": 0}',
               '{"total": 505}',
               ST_SetSRID(ST_MakePoint(-80.370663, 25.752716), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'e0c24509-cd3c-454e-b289-325455d2950d',
+              'Lot 7',
               'Lot 7',
               '{"total": 0}',
               '{"total": 382}',
               ST_SetSRID(ST_MakePoint(-80.380421, 25.752813), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '73d0e63e-43a2-4bb1-98e3-325aad8b2d6d',
+              'Lot 9',
               'Lot 9',
               '{"total": 0}',
               '{"total": 584}',
               ST_SetSRID(ST_MakePoint(-80.378111, 25.758499), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               'a6c13e1d-872f-4225-99fe-b8195f514fbb',
+              'Lot 10',
               'Lot 10',
               '{"total": 0}',
               '{"total": 235}',
               ST_SetSRID(ST_MakePoint(-80.381231, 25.757195), 4326)::geography
             ) ON CONFLICT DO NOTHING;
-            INSERT INTO parking_facility (id, name, current_occupancy, max_occupancy, location_geog)
+            INSERT INTO parking_facility (id, name, full_name, current_occupancy, max_occupancy, location_geog)
             VALUES (
               '42de29ee-1955-419d-aca0-5ddce2028715',
+              'Lot 13',
               'Lot 13',
               '{"total": 0}',
               '{"total": 77}',
