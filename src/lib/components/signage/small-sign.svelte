@@ -64,8 +64,8 @@
       {/each}
   </div>
   <div id="underline">
-    <img class="paw"  src={paw} alt="panther paw icon" />
-    Please link your plate!
+    <img id="underline-paw" src={paw} alt="panther paw icon" />
+    <div id="underline-message">Please link your plate!</div>
   </div>
 </main>
 
@@ -74,6 +74,7 @@
     overflow: hidden;
     background-color: #081e3f;
     color: white;
+    font-family: 'Montserrat Variable', sans-serif;
   }
   main {
     height: 100vh;
@@ -140,11 +141,18 @@
     justify-content: center;
     white-space: nowrap;
   }
-  .paw {
+  #underline-paw {
+    flex-grow: 0;
     position: relative;
     height: 1em;
     width: 1em;
-    bottom: 0.1em;
+    left: 0.1em;
+    align-items: center;
+    justify-content: center;
+  }
+  #underline-message {
+    flex-grow: 1;
+    text-align: center;
   }
   @container occupancy style(--count: 1) {
     .facility-name {
