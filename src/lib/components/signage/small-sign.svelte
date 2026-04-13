@@ -52,7 +52,7 @@
       {#each facilities as facility (facility.name)}
         <div class="facility">
           <div class="facility-name">{facility.name}</div>
-          <div class="facility-counts" style="flex-direction: {facility.count.length > 1 && facilities.length == 1 ? "row" : "column"};">
+          <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
             {#each facility.count as count (count.name)}
               <div class="facility-count">
                 <div class="facility-count-name text">{facility.count.length != 1 ? count.name : "Available Spaces"}</div>
@@ -110,6 +110,8 @@
     flex-direction: column;
     flex: 1;
     width: 100%;
+    container-type: style;
+    container-name: counts;
   }
   .facility-count {
     display: flex;
@@ -156,35 +158,43 @@
   }
   @container occupancy style(--count: 1) {
     .facility-name {
-      font-size: 19cqb;
+      font-size: 30cqb;
+      line-height: 1.1em;
     }
-    .facility-count-name {
-      font-size: 15cqb;
+    @container counts style(--count-items: 1) {
+      .facility-count-name { font-size: 15cqb; }
+      .facility-count-value { font-size: 29cqb; }
     }
-    .facility-count-value {
-      font-size: 29cqb;
+    @container counts style(--count-items: 2) {
+      .facility-count-name { font-size: 16cqb; }
+      .facility-count-value { font-size: 28cqb; }
     }
   }
   @container occupancy style(--count: 2) {
     .facility-name {
-      font-size: 17cqb;
+      font-size: 20cqb;
+      line-height: 1.3em;
     }
-    .facility-count-name {
-      font-size: 10cqb;
+    @container counts style(--count-items: 1) {
+      .facility-count-name { font-size: 12cqb; }
+      .facility-count-value { font-size: 19cqb; }
     }
-    .facility-count-value {
-      font-size: 14cqb;
+    @container counts style(--count-items: 2) {
+      .facility-count-name { font-size: 10cqb; }
+      .facility-count-value { font-size: 14cqb; }
     }
   }
   @container occupancy style(--count: 3) {
     .facility-name {
-      font-size: 13cqb;
+      font-size: 17cqb;
     }
-    .facility-count-name {
-      font-size: 9cqb;
+    @container counts style(--count-items: 1) {
+      .facility-count-name { font-size: 9cqb; }
+      .facility-count-value { font-size: 15cqb; }
     }
-    .facility-count-value {
-      font-size: 15cqb;
+    @container counts style(--count-items: 2) {
+      .facility-count-name { font-size: 10cqb; }
+      .facility-count-value { font-size: 13cqb; }
     }
   }
 </style>
