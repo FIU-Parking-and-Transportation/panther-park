@@ -30,6 +30,12 @@ export interface FacilityOccupancy {
   max_occupancy: Record<string, number>;
 }
 
+export interface DigitalSign {
+  id: string;
+  name: string;
+  attributes: Record<string, unknown>;
+}
+
 // ---------------------------------------------------------------------------
 // Helper – pick a random facility id 
 // ---------------------------------------------------------------------------
@@ -156,6 +162,40 @@ const app = new Elysia({ prefix: "/api/v1" })
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "Get facility occupancy" },
+    },
+  )
+
+  // ── GET /api/v1/digital-signs ─────────────────────────────────────────────
+  .get(
+    "/digital-signs",
+    async () => {
+      try {
+        const rows = await sql`
+          SELECT id, name, attributes
+          FROM digital_sign
+          ORDER BY name;
+        `;
+        return rows as DigitalSign[];
+      } catch (error: any) {
+        if (error instanceof SQL.PostgresError) {
+          console.error("DB error:", error.code, error.detail);
+          return status(500, { error: "Failed to fetch digital signs" });
+        }
+        throw error;
+      }
+    },
+    {
+      response: {
+        200: t.Array(
+          t.Object({
+            id: t.String(),
+            name: t.String(),
+            attributes: t.Record(t.String(), t.Unknown()),
+          }),
+        ),
+        500: t.Object({ error: t.String() }),
+      },
+      detail: { summary: "List digital signs" },
     },
   )
 
