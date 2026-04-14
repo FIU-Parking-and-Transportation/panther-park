@@ -12,20 +12,23 @@
 
   interface Props {
     facilitiesProp: string[];
+    underlineMessage?: string;
   }
 
-  let { facilitiesProp }: Props = $props();
+  let { facilitiesProp, underlineMessage = "Please link your plate!" }: Props = $props();
 
   let rawData = $state<FacilityOccupancy[] | null>(null);
 
   let facilities = $derived<FacilityDisplay[]>(
-    (rawData ?? [])
-      .filter((f) => facilitiesProp.includes(f.name))
-      .map((f) => ({
+    facilitiesProp.flatMap((name) => {
+      const f = (rawData ?? []).find((r) => r.name === name);
+      if (!f) return [];
+      return [{
         name: f.name,
         count: Object.entries(f.current_occupancy)
-        .map(([key, value]) => ({ name: key, value: Math.max((f.max_occupancy[key] ?? 0) - Math.max(value, 0), 0)})),
-      })),
+        .map(([key, value]) => ({ name: key, value: Math.max((f.max_occupancy[key] ?? 0) - Math.max(value, 0), 0) })),
+      }];
+    }),
   );
 
   onMount(() => {
@@ -64,7 +67,7 @@
   </div>
   <div id="underline">
     <img id="underline-paw" src={paw} alt="panther paw icon" />
-    <div id="underline-message">Please link your plate!</div>
+    <div id="underline-message">{underlineMessage}</div>
   </div>
 </main>
 
