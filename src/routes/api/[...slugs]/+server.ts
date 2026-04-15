@@ -34,6 +34,8 @@ export interface DigitalSign {
   id: string;
   name: string;
   attributes: Record<string, unknown>;
+  latitude: number;
+  longitude: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -171,7 +173,12 @@ const app = new Elysia({ prefix: "/api/v1" })
     async () => {
       try {
         const rows = await sql`
-          SELECT id, name, attributes
+          SELECT
+            id,
+            name,
+            attributes,
+            ST_Y(location_geog::geometry) AS latitude,
+            ST_X(location_geog::geometry) AS longitude
           FROM digital_sign
           ORDER BY name;
         `;
@@ -191,11 +198,57 @@ const app = new Elysia({ prefix: "/api/v1" })
             id: t.String(),
             name: t.String(),
             attributes: t.Record(t.String(), t.Unknown()),
+            latitude: t.Number(),
+            longitude: t.Number(),
           }),
         ),
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "List digital signs" },
+    },
+  )
+
+  // ── GET /api/v1/digital-signs/:id ────────────────────────────────────────
+  .get(
+    "/digital-signs/:id",
+    async ({ params }) => {
+      try {
+        const rows = await sql`
+          SELECT
+            id,
+            name,
+            attributes,
+            ST_Y(location_geog::geometry) AS latitude,
+            ST_X(location_geog::geometry) AS longitude
+          FROM digital_sign
+          WHERE id = ${params.id}::uuid;
+        `;
+        if (rows.length === 0) {
+          return status(404, { error: "Digital sign not found" });
+        }
+        return (rows as DigitalSign[])[0];
+      } catch (error: any) {
+        if (error instanceof SQL.PostgresError) {
+          console.error("DB error:", error.code, error.detail);
+          return status(500, { error: "Failed to fetch digital sign" });
+        }
+        throw error;
+      }
+    },
+    {
+      params: t.Object({ id: t.String({ format: "uuid" }) }),
+      response: {
+        200: t.Object({
+          id: t.String(),
+          name: t.String(),
+          attributes: t.Record(t.String(), t.Unknown()),
+          latitude: t.Number(),
+          longitude: t.Number(),
+        }),
+        404: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
+      },
+      detail: { summary: "Get a digital sign by ID" },
     },
   )
 
