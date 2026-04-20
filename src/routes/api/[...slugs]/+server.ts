@@ -252,6 +252,83 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
   )
 
+  // ── GET /api/v1/digital-signs/:id/image ──────────────────────────────────
+  .get(
+    "/digital-signs/:id/image",
+    async ({ params }) => {
+      // Fetch sign attributes from DB
+      let ip: string | null = null;
+      try {
+        const rows = await sql`
+          SELECT attributes
+          FROM digital_sign
+          WHERE id = ${params.id}::uuid;
+        `;
+        if (rows.length === 0) {
+          return status(404, { error: "Digital sign not found" });
+        }
+        const attrs = (rows as { attributes: Record<string, unknown> }[])[0].attributes;
+        if (typeof attrs.ip !== "string") {
+          return status(502, { error: "Sign has no IP address configured" });
+        }
+        ip = attrs.ip;
+      } catch (error: any) {
+        if (error instanceof SQL.PostgresError) {
+          console.error("DB error:", error.code, error.detail);
+          return status(500, { error: "Failed to fetch digital sign" });
+        }
+        throw error;
+      }
+
+      // Proxy configuration from environment
+      const proxyUrl = process.env.LPR_PROXY_URL;
+      const proxyUsername = process.env.LPR_PROXY_USERNAME;
+      const proxyPassword = process.env.LPR_PROXY_PASSWORD;
+      if (!proxyUrl) {
+        return status(500, { error: "Proxy not configured" });
+      }
+
+      const proxyAuth = proxyUsername && proxyPassword
+        ? Buffer.from(`${proxyUsername}:${proxyPassword}`).toString("base64")
+        : null;
+
+      try {
+        const imageResponse = await fetch(`http://${ip}/daktronics/imaging/1.0/GetImage`, {
+          proxy: {
+            url: proxyUrl,
+            ...(proxyAuth ? { headers: { "Proxy-Authorization": `Basic ${proxyAuth}` } } : {}),
+          },
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!imageResponse.ok) {
+          return status(502, { error: `Sign returned HTTP ${imageResponse.status}` });
+        }
+
+        const contentType = imageResponse.headers.get("content-type") ?? "image/jpeg";
+        const imageBytes = await imageResponse.bytes();
+        return new Response(imageBytes, {
+          headers: { "Content-Type": contentType },
+        });
+      } catch (error: any) {
+        if (error.name === "TimeoutError") {
+          return status(504, { error: "Sign request timed out" });
+        }
+        throw error;
+      }
+    },
+    {
+      params: t.Object({ id: t.String({ format: "uuid" }) }),
+      response: {
+        404: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
+        502: t.Object({ error: t.String() }),
+        504: t.Object({ error: t.String() }),
+      },
+      detail: { summary: "Get a screenshot image from a digital sign" },
+    },
+  )
+
   // ── POST routes (bearer token required) ──────────────────────────────────
   .guard(
     {
