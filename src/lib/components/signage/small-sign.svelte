@@ -3,7 +3,7 @@
   import { treaty } from "@elysiajs/eden";
   import type { App } from "elysia-api";
   import type { FacilityOccupancy } from "elysia-api";
-  import paw from "$lib/assets/sticker-paw-solid-gold.svg";
+  import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import NumberFlow from "@number-flow/svelte";
 
   interface FacilityDisplay {
@@ -103,7 +103,7 @@
     {/each}
   </div>
   <div id="underline">
-    <img id="underline-paw" src={paw} alt="panther paw icon" />
+    <Paw />
     <div id="underline-message">{underlineMessage}</div>
   </div>
 </main>
@@ -181,15 +181,6 @@
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-  }
-  #underline-paw {
-    flex-grow: 0;
-    position: relative;
-    height: 1em;
-    width: 1em;
-    left: 0.1em;
-    align-items: center;
-    justify-content: center;
   }
   #underline-message {
     flex-grow: 1;
