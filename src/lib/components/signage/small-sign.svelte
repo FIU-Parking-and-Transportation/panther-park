@@ -21,9 +21,11 @@
 
   let rawData = $state<FacilityOccupancy[] | null>(null);
 
+  const decisionCategories = ["student", "total"];
+
   function isFull(f: FacilityOccupancy): boolean {
     return Object.entries(f.current_occupancy).some(
-      ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current >= (f.max_occupancy[key] ?? 0)
+      ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current >= (f.max_occupancy[key] ?? 0) && decisionCategories.includes(key)
     );
   }
 
