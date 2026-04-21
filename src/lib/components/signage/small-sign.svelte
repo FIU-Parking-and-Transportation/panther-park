@@ -29,14 +29,21 @@
     );
   }
 
+  const categoryOrder: string[] = ["student", "other", "total"];
+
   function toDisplay(f: FacilityOccupancy): FacilityDisplay {
-    return {
-      name: f.name,
-      count: Object.entries(f.current_occupancy).map(([key, current]) => {
-        const max = f.max_occupancy[key] ?? 0;
-        return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: max > 0 && current >= max };
-      }),
-    };
+    const counts = Object.entries(f.current_occupancy).map(([key, current]) => {
+      const max = f.max_occupancy[key] ?? 0;
+      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: max > 0 && current >= max };
+    });
+    counts.sort((a, b) => {
+      const ai = categoryOrder.indexOf(a.name);
+      const bi = categoryOrder.indexOf(b.name);
+      const aOrder = ai === -1 ? categoryOrder.length : ai;
+      const bOrder = bi === -1 ? categoryOrder.length : bi;
+      return aOrder - bOrder;
+    });
+    return { name: f.name, count: counts };
   }
 
   function resolve(name: string): FacilityOccupancy | undefined {
