@@ -4,6 +4,7 @@
   import type { App } from "elysia-api";
   import type { FacilityOccupancy } from "elysia-api";
   import paw from "$lib/assets/sticker-paw-solid-gold.svg";
+  import NumberFlow from "@number-flow/svelte";
 
   interface FacilityDisplay {
     name: string;
@@ -79,19 +80,25 @@
 
 <main>
   <div id="occupancy" style:--count={facilities.length}>
-      {#each facilities as facility (facility.name)}
-        <div class="facility">
-          <div class="facility-name">{facility.name}</div>
-          <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
-            {#each facility.count as count (count.name)}
-              <div class="facility-count">
-                <div class="facility-count-name text">{facility.count.length != 1 ? count.name : "Available Spaces"}</div>
-                <div class="facility-count-value text">{count.full ? "Full" : count.value}</div>
+    {#each facilities as facility (facility.name)}
+      <div class="facility">
+        <div class="facility-name">{facility.name}</div>
+        <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
+          {#each facility.count as count (count.name)}
+            <div class="facility-count">
+              <div class="facility-count-name text">{facility.count.length != 1 ? count.name : "Available Spaces"}</div>
+              <div class="facility-count-value text">
+                {#if count.full}
+                  Full
+                {:else}
+                  <NumberFlow value={count.value} />
+                {/if}
               </div>
-            {/each}
-          </div>
+            </div>
+          {/each}
         </div>
-      {/each}
+      </div>
+    {/each}
   </div>
   <div id="underline">
     <img id="underline-paw" src={paw} alt="panther paw icon" />
