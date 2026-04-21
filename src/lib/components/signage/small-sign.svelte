@@ -7,29 +7,57 @@
 
   interface FacilityDisplay {
     name: string;
-    count: { name: string; value: number }[];
+    count: { name: string; value: number; full: boolean }[];
   }
 
   interface Props {
     facilitiesProp: string[];
+    overflowFacilitiesProp: string[];
     underlineMessage?: string;
   }
 
-  let { facilitiesProp, underlineMessage = "Please link your plate!" }: Props = $props();
+  let { facilitiesProp, overflowFacilitiesProp, underlineMessage = "Please link your plate!" }: Props = $props();
 
   let rawData = $state<FacilityOccupancy[] | null>(null);
 
-  let facilities = $derived<FacilityDisplay[]>(
-    facilitiesProp.flatMap((name) => {
-      const f = (rawData ?? []).find((r) => r.name === name);
-      if (!f) return [];
-      return [{
-        name: f.name,
-        count: Object.entries(f.current_occupancy)
-        .map(([key, value]) => ({ name: key, value: Math.max((f.max_occupancy[key] ?? 0) - Math.max(value, 0), 0) })),
-      }];
-    }),
-  );
+  function isFull(f: FacilityOccupancy): boolean {
+    return Object.entries(f.current_occupancy).some(
+      ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current >= (f.max_occupancy[key] ?? 0)
+    );
+  }
+
+  function toDisplay(f: FacilityOccupancy): FacilityDisplay {
+    return {
+      name: f.name,
+      count: Object.entries(f.current_occupancy).map(([key, current]) => {
+        const max = f.max_occupancy[key] ?? 0;
+        return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: max > 0 && current >= max };
+      }),
+    };
+  }
+
+  function resolve(name: string): FacilityOccupancy | undefined {
+    return (rawData ?? []).find((r) => r.name === name);
+  }
+
+  let facilities = $derived.by<FacilityDisplay[]>(() => {
+    const primary = facilitiesProp.flatMap((name) => {
+      const f = resolve(name);
+      return f ? [toDisplay(f)] : [];
+    });
+
+    if (!primary.some((_, i) => isFull(resolve(facilitiesProp[i])!))) return primary;
+
+    // Prefer the first non-full overflow not already in the primary list;
+    // fall back to the first available overflow if all are full.
+    const primarySet = new Set(facilitiesProp);
+    const candidates = overflowFacilitiesProp
+      .filter((name) => !primarySet.has(name))
+      .flatMap((name) => { const f = resolve(name); return f ? [f] : []; });
+
+    const overflow = candidates.find((f) => !isFull(f)) ?? candidates[0];
+    return overflow ? [...primary, toDisplay(overflow)] : primary;
+  });
 
   onMount(() => {
     const api = treaty<App>(window.location.origin);
@@ -58,7 +86,7 @@
             {#each facility.count as count (count.name)}
               <div class="facility-count">
                 <div class="facility-count-name text">{facility.count.length != 1 ? count.name : "Available Spaces"}</div>
-                <div class="facility-count-value text">{count.value}</div>
+                <div class="facility-count-value text">{count.full ? "Full" : count.value}</div>
               </div>
             {/each}
           </div>

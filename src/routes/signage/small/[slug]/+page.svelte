@@ -11,6 +11,7 @@
   const slug: string = page.params.slug ?? "";
 
   let facilities = $state<string[]>([]);
+  let overflowFacilities = $state<string[]>([]);
 
   onMount(async () => {
     const { data, error } = await api.api.v1["digital-signs"]({ id: slug }).get();
@@ -20,8 +21,12 @@
       if (Array.isArray(raw) && raw.every((item) => typeof item === "string")) {
         facilities = raw as string[];
       }
+      const rawOverflow = sign.attributes["overflow_facilities"];
+      if (Array.isArray(rawOverflow) && rawOverflow.every((item) => typeof item === "string")) {
+        overflowFacilities = rawOverflow as string[];
+      }
     }
   })
 </script>
 
-<SmallSign facilitiesProp={facilities} />
+<SmallSign facilitiesProp={facilities} overflowFacilitiesProp={overflowFacilities} />
