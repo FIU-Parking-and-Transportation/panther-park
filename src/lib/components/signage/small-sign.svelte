@@ -204,7 +204,7 @@
     }
     @container counts style(--count-items: 2) {
       .facility-count-name { font-size: 16cqb; }
-      .facility-count-value { font-size: 28cqb; }
+      .facility-count-value { font-size: 20cqb; }
     }
   }
   @container occupancy style(--count: 2) {
