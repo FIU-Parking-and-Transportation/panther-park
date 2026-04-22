@@ -3,6 +3,7 @@
   import { treaty } from "@elysiajs/eden";
   import type { App } from "elysia-api";
   import type { FacilityOccupancy } from "elysia-api";
+  import type { DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import NumberFlow from "@number-flow/svelte";
 
@@ -12,14 +13,15 @@
   }
 
   interface Props {
-    facilitiesProp: string[];
-    overflowFacilitiesProp: string[];
-    underlineMessage?: string;
+    signId: string;
   }
 
-  let { facilitiesProp, overflowFacilitiesProp, underlineMessage = "Please link your plate!" }: Props = $props();
+  let { signId }: Props = $props();
 
   let rawData = $state<FacilityOccupancy[] | null>(null);
+  let facilitiesProp = $state<string[]>([]);
+  let overflowFacilitiesProp = $state<string[]>([]);
+  let taglineMessage = $state("Please link your plate!");
 
   const decisionCategories = ["student", "total"];
 
@@ -78,10 +80,44 @@
       return data;
     }
 
-    fetchOccupancy().then((d) => { rawData = d; });
+    async function fetchSign() {
+      const { data, error } = await api.api.v1["digital-signs"]({ id: signId }).get();
+      if (error) throw Error;
+      return data as DigitalSign;
+    }
+
+    async function fetchAll() {
+      const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
+      rawData = occupancyData;
+      const rawFacilities = signData.attributes["facilities"];
+      if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
+        facilitiesProp = rawFacilities as string[];
+      }
+      const rawOverflow = signData.attributes["overflow_facilities"];
+      if (Array.isArray(rawOverflow) && rawOverflow.every((item) => typeof item === "string")) {
+        overflowFacilitiesProp = rawOverflow as string[];
+      }
+      const rawTagline = signData.attributes["tagline_message"];
+      if (typeof rawTagline === "string" && rawTagline !== "") {
+        taglineMessage = rawTagline;
+      }
+    }
+
+    fetchAll();
 
     const interval = setInterval(async () => {
-      rawData = await fetchOccupancy();
+      const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
+      rawData = occupancyData;
+      const rawFacilities = signData.attributes["facilities"];
+      if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
+        facilitiesProp = rawFacilities as string[];
+      }
+      const rawOverflow = signData.attributes["overflow_facilities"];
+      if (Array.isArray(rawOverflow) && rawOverflow.every((item) => typeof item === "string")) {
+        overflowFacilitiesProp = rawOverflow as string[];
+      }
+      const rawTagline = signData.attributes["tagline_message"];
+      taglineMessage = (typeof rawTagline === "string" && rawTagline !== "") ? rawTagline : "Please link your plate!";
     }, 3000);
     return () => clearInterval(interval);
   });
@@ -109,9 +145,9 @@
       </div>
     {/each}
   </div>
-  <div id="underline">
+  <div id="tagline">
     <Paw />
-    <div id="underline-message">{underlineMessage}</div>
+    <div id="tagline-message">{taglineMessage}</div>
   </div>
 </main>
 
@@ -180,7 +216,7 @@
     text-transform: capitalize;
     width: 100%;
   }
-  #underline {
+  #tagline {
     display: flex;
     font-size: 9cqmin;
     height: 12vh;
@@ -189,8 +225,9 @@
     justify-content: center;
     white-space: nowrap;
   }
-  #underline-message {
+  #tagline-message {
     flex-grow: 1;
+    font-weight: bold;
     text-align: center;
   }
   @container occupancy style(--count: 1) {

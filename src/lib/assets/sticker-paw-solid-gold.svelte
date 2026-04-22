@@ -1,5 +1,5 @@
 <svg
-  id="underline-paw"
+  id="tagline-paw"
   viewBox="0 0 955.69128 918.5517"
   width="955.69128"
   height="918.5517"
@@ -36,7 +36,7 @@
   </g>
 </svg>
 <style>
-#underline-paw {
+#tagline-paw {
   flex-grow: 0;
   position: relative;
   height: 1em;
