@@ -6,6 +6,7 @@
   import type { DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import NumberFlow from "@number-flow/svelte";
+  import Ticker from "$lib/components/ticker.svelte";
 
   interface FacilityDisplay {
     name: string;
@@ -147,7 +148,7 @@
   </div>
   <div id="tagline">
     <Paw />
-    <div id="tagline-message">{taglineMessage}</div>
+    <Ticker text={taglineMessage} />
   </div>
 </main>
 
@@ -224,11 +225,6 @@
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-  }
-  #tagline-message {
-    flex-grow: 1;
-    font-weight: bold;
-    text-align: center;
   }
   @container occupancy style(--count: 1) {
     .facility-name {
