@@ -132,7 +132,15 @@
         <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
           {#each facility.count as count (count.name)}
             <div class="facility-count">
-              <div class="facility-count-name text">{facility.count.length != 1 ? count.name : "Available Spaces"}</div>
+              {#if facility.count.length != 1}
+                <div class="facility-count-name text">{count.name}</div>
+              {:else}
+                {#if facilities.length == 1}
+                  <div class="facility-count-name text">Available Spaces</div>
+                {:else}
+                  <div class="facility-count-name text">Available<br>Spaces</div>
+                {/if}
+              {/if}
               <div class="facility-count-value text">
                 {#if count.full}
                   Full
