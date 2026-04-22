@@ -236,12 +236,12 @@
   }
   @container occupancy style(--count: 1) {
     .facility-name {
-      font-size: 30cqb;
+      font-size: 33cqb;
       line-height: 1.1em;
     }
     @container counts style(--count-items: 1) {
       .facility-count-name { font-size: 15cqb; }
-      .facility-count-value { font-size: 29cqb; }
+      .facility-count-value { font-size: 26cqb; }
     }
     @container counts style(--count-items: 2) {
       .facility-count-name { font-size: 16cqb; }
@@ -254,12 +254,12 @@
       line-height: 1.3em;
     }
     @container counts style(--count-items: 1) {
-      .facility-count-name { font-size: 12cqb; }
-      .facility-count-value { font-size: 19cqb; }
+      .facility-count-name { font-size: 13cqb; }
+      .facility-count-value { font-size: 21cqb; }
     }
     @container counts style(--count-items: 2) {
-      .facility-count-name { font-size: 10cqb; }
-      .facility-count-value { font-size: 14cqb; }
+      .facility-count-name { font-size: 11cqb; }
+      .facility-count-value { font-size: 13cqb; }
     }
   }
   @container occupancy style(--count: 3) {
