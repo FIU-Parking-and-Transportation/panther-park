@@ -12,12 +12,6 @@ interface FacilityListItem {
   id: string;
   name: string;
   full_name: string;
-}
-
-interface FacilityLocation {
-  id: string;
-  name: string;
-  full_name: string;
   latitude: number;
   longitude: number;
 }
@@ -61,7 +55,12 @@ const app = new Elysia({ prefix: "/api/v1" })
     async () => {
       try {
         const rows = await sql`
-          SELECT id, name, full_name
+          SELECT
+            id,
+            name,
+            full_name,
+            ST_Y(location_geog::geometry) AS latitude,
+            ST_X(location_geog::geometry) AS longitude
           FROM parking_facility
           ORDER BY name;
         `;
@@ -76,55 +75,10 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
     {
       response: {
-        200: t.Array(t.Object({ id: t.String(), name: t.String(), full_name: t.String() })),
+        200: t.Array(t.Object({ id: t.String(), name: t.String(), full_name: t.String(), latitude: t.Number(), longitude: t.Number() })),
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "List parking facilities" },
-    },
-  )
-
-  // ── GET /api/v1/facilities/locations ─────────────────────────────────────
-  .get(
-    "/facilities/locations",
-    async () => {
-      try {
-        const rows = await sql`
-          SELECT
-            id,
-            name,
-            full_name,
-            ST_Y(location_geog::geometry) AS latitude,
-            ST_X(location_geog::geometry) AS longitude
-          FROM parking_facility
-          ORDER BY name;
-        `;
-        if (rows.length === 0) {
-          return status(404, { error: "Location fetch error" });
-        }
-        return rows as FacilityLocation[];
-      } catch (error: any) {
-        if (error instanceof SQL.PostgresError) {
-          console.error("DB error:", error.code, error.detail);
-          return status(500, { error: "Failed to fetch locations" });
-        }
-        throw error;
-      }
-    },
-    {
-      response: {
-        200: t.Array(
-          t.Object({
-            id: t.String(),
-            name: t.String(),
-            full_name: t.String(),
-            latitude: t.Number(),
-            longitude: t.Number(),
-          }),
-        ),
-        404: t.Object({ error: t.String() }),
-        500: t.Object({ error: t.String() }),
-      },
-      detail: { summary: "List facility GeoJSON locations" },
     },
   )
 
