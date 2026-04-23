@@ -70,7 +70,7 @@
         name: match.name,
         fullName: match.full_name,
         counts: [
-          { label: "Available Spaces", value: Math.max(maxTotal - currTotal, 0) },
+          { label: "Total", value: Math.max(maxTotal - currTotal, 0) },
         ],
       };
     })
