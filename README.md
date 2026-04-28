@@ -30,18 +30,21 @@ src/
     components/
       occupancy-radial.svelte # Radial occupancy chart widget
       signage/                # Digital signage components
+      ticker.svelte
       ui/                     # shadcn-svelte primitives (card, chart, …)
     s3.ts                     # Bun S3Client wrapper + image upload helper
     utils.ts                  # cn() utility, type helpers
   routes/
     +layout.svelte            # Root layout
-    +page.svelte              # Dashboard home page
+    +page.svelte              # SvelteKit default placeholder
     layout.css                # Global Tailwind theme + CSS custom properties
     api/
       [...slugs]/+server.ts   # All API routes (single Elysia app)
+    embed/
+      popup-count-widget/     # Embeddable widget: ?facilities=PG1,PG2
     signage/
-      large/+page.svelte      # Large-format digital sign display
-      small/[slug]/+page.svelte
+      large/+page.svelte      # Full-screen garage board (all PG garages)
+      small/[slug]/+page.svelte  # Individual sign page (digital_sign UUID)
 ```
 
 ## API
@@ -53,9 +56,12 @@ at `/api/v1/swagger`.
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
 | GET | `/api/v1/facilities` | Public | List parking facilities |
-| GET | `/api/v1/facilities/locations` | Public | Facility GeoJSON locations |
-| GET | `/api/v1/facilities/occupancy` | Public | Current occupancy counts |
+| GET | `/api/v1/facilities/occupancy` | Public | Current occupancy counts (materialized view) |
 | POST | `/api/v1/facilities/occupancy` | Bearer | Ingest legacy occupancy export |
+| GET | `/api/v1/digital-signs` | Public | List digital signs |
+| GET | `/api/v1/digital-signs/:id` | Public | Get a digital sign by UUID |
+| GET | `/api/v1/digital-signs/:id/image` | Public | Proxy screenshot from sign (requires `LPR_PROXY_URL`) |
+| PATCH | `/api/v1/digital-signs/:id/tagline` | Bearer | Update sign tagline message |
 | POST | `/api/v1/lpr/read` | Bearer | Record a fixed-camera LPR plate read |
 | POST | `/api/v1/db/operations` | Bearer | Seed database (dev/admin) |
 
@@ -91,9 +97,12 @@ then `{"action": "seedFacilities"}` to populate initial FIU facilities.
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `DB_OPERATIONS_TOKEN` | Yes | Bearer token for protected API routes |
-| `LOG_LEVEL` | No | `"verbose"` or `"debug"` |
+| `LOG_LEVEL` | No | `"verbose"` or `"debug"` — must be in `.env` (loaded at build time) |
 | `S3_ACCESS_KEY_ID` | Yes (LPR) | AWS / S3-compatible key |
 | `S3_SECRET_ACCESS_KEY` | Yes (LPR) | AWS / S3-compatible secret |
 | `S3_BUCKET` | Yes (LPR) | S3 bucket for LPR images |
 | `S3_REGION` | No | Default: `us-east-1` |
 | `S3_ENDPOINT` | No | Custom endpoint (MinIO, etc.) |
+| `LPR_PROXY_URL` | Yes (sign images) | HTTP proxy for fetching sign screenshots |
+| `LPR_PROXY_USERNAME` | No | Proxy basic-auth username |
+| `LPR_PROXY_PASSWORD` | No | Proxy basic-auth password |
