@@ -1,6 +1,7 @@
 import {openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, status, t } from "elysia";
 import { sql, SQL } from "bun";
+import { auth } from "$lib/auth";
 import { uploadBase64Image } from "$lib/s3";
 import bearer from "@elysiajs/bearer";
 
@@ -509,6 +510,88 @@ const app = new Elysia({ prefix: "/api/v1" })
               updated_at      timestamptz NOT NULL DEFAULT now(),
               created_at      timestamptz NOT NULL DEFAULT now()
             );
+
+            CREATE TABLE IF NOT EXISTS "user" (
+              "id"             TEXT        NOT NULL PRIMARY KEY,
+              "name"           TEXT        NOT NULL,
+              "email"          TEXT        NOT NULL UNIQUE,
+              "emailVerified"  BOOLEAN     NOT NULL,
+              "image"          TEXT,
+              "createdAt"      TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "updatedAt"      TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "role"           TEXT                 DEFAULT 'user',
+              "banned"         BOOLEAN              DEFAULT FALSE,
+              "banReason"      TEXT,
+              "banExpires"     TIMESTAMPTZ
+            );
+
+            CREATE TABLE IF NOT EXISTS "session" (
+              "id"          TEXT        NOT NULL PRIMARY KEY,
+              "expiresAt"   TIMESTAMPTZ NOT NULL,
+              "token"       TEXT        NOT NULL UNIQUE,
+              "createdAt"   TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "updatedAt"   TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "ipAddress"   TEXT,
+              "userAgent"   TEXT,
+              "userId"      TEXT        NOT NULL REFERENCES "user"("id") ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS "account" (
+              "id"                     TEXT        NOT NULL PRIMARY KEY,
+              "accountId"              TEXT        NOT NULL,
+              "providerId"             TEXT        NOT NULL,
+              "userId"                 TEXT        NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+              "accessToken"            TEXT,
+              "refreshToken"           TEXT,
+              "idToken"                TEXT,
+              "accessTokenExpiresAt"   TIMESTAMPTZ,
+              "refreshTokenExpiresAt"  TIMESTAMPTZ,
+              "scope"                  TEXT,
+              "password"               TEXT,
+              "createdAt"              TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "updatedAt"              TIMESTAMPTZ NOT NULL DEFAULT now()
+            );
+
+            CREATE TABLE IF NOT EXISTS "verification" (
+              "id"          TEXT        NOT NULL PRIMARY KEY,
+              "identifier"  TEXT        NOT NULL,
+              "value"       TEXT        NOT NULL,
+              "expiresAt"   TIMESTAMPTZ NOT NULL,
+              "createdAt"   TIMESTAMPTZ,
+              "updatedAt"   TIMESTAMPTZ
+            );
+
+            CREATE TABLE IF NOT EXISTS "apikey" (
+              "id"                   TEXT        NOT NULL PRIMARY KEY,
+              "configId"             TEXT        NOT NULL DEFAULT 'default',
+              "name"                 TEXT,
+              "start"                TEXT,
+              "prefix"               TEXT,
+              "key"                  TEXT        NOT NULL UNIQUE,
+              "referenceId"          TEXT        NOT NULL,
+              "refillInterval"       INTEGER,
+              "refillAmount"         INTEGER,
+              "lastRefillAt"         TIMESTAMPTZ,
+              "enabled"              BOOLEAN     NOT NULL DEFAULT TRUE,
+              "rateLimitEnabled"     BOOLEAN     NOT NULL DEFAULT FALSE,
+              "rateLimitTimeWindow"  INTEGER,
+              "rateLimitMax"         INTEGER,
+              "requestCount"         INTEGER     NOT NULL DEFAULT 0,
+              "remaining"            INTEGER,
+              "lastRequest"          TIMESTAMPTZ,
+              "expiresAt"            TIMESTAMPTZ,
+              "createdAt"            TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "updatedAt"            TIMESTAMPTZ NOT NULL DEFAULT now(),
+              "permissions"          TEXT,
+              "metadata"             TEXT
+            );
+
+            CREATE INDEX IF NOT EXISTS session_user_id_idx
+              ON "session" ("userId");
+            CREATE INDEX IF NOT EXISTS account_user_id_idx
+              ON "account" ("userId");
+            CREATE INDEX IF NOT EXISTS apikey_reference_id_idx
+              ON "apikey" ("referenceId");
           `.simple();
         } catch (error: any) {
           if (error instanceof SQL.PostgresError) {
@@ -750,11 +833,39 @@ const app = new Elysia({ prefix: "/api/v1" })
         return status(200, { success: true, message: "Signs seeded successfully" });
       }
 
+      if (body.action === "createUser") {
+        const { email, password, name, role = "user" } = body;
+        if (!email || !password || !name) {
+          return status(400, {
+            success: false,
+            message: "email, password, and name are required for createUser",
+          });
+        }
+        try {
+          await auth.api.createUser({
+            body: { email, password, name, role: role as "admin" | "user" },
+          });
+        } catch (error: any) {
+          console.error("createUser error:", error?.message ?? error);
+          return status(500, { success: false, message: "Failed to create user" });
+        }
+        return status(200, { success: true, message: `User ${email} created with role "${role}"` });
+      }
+
       return status(400, { success: false, message: "Unknown action" });
     },
     {
       body: t.Object({
-        action: t.Union([t.Literal("seedDatabase"), t.Literal("seedFacilities"), t.Literal("seedSigns")]),
+        action: t.Union([
+          t.Literal("seedDatabase"),
+          t.Literal("seedFacilities"),
+          t.Literal("seedSigns"),
+          t.Literal("createUser"),
+        ]),
+        email:    t.Optional(t.String({ format: "email" })),
+        password: t.Optional(t.String()),
+        name:     t.Optional(t.String()),
+        role:     t.Optional(t.Union([t.Literal("admin"), t.Literal("staff"), t.Literal("user")])),
       }),
       response: {
         200: t.Object({ success: t.Boolean(), message: t.String() }),
