@@ -23,6 +23,7 @@
   let facilitiesProp = $state<string[]>([]);
   let overflowFacilitiesProp = $state<string[]>([]);
   let taglineMessage = $state("Please link your plate!");
+  let splashMessage = $state("");
 
   const decisionCategories = ["student", "total"];
 
@@ -102,6 +103,8 @@
       if (typeof rawTagline === "string" && rawTagline !== "") {
         taglineMessage = rawTagline;
       }
+      const rawSplash = signData.attributes["splash_message"];
+      splashMessage = typeof rawSplash === "string" ? rawSplash : "";
     }
 
     fetchAll();
@@ -119,46 +122,54 @@
       }
       const rawTagline = signData.attributes["tagline_message"];
       taglineMessage = (typeof rawTagline === "string" && rawTagline !== "") ? rawTagline : "Please link your plate!";
+      const rawSplash = signData.attributes["splash_message"];
+      splashMessage = typeof rawSplash === "string" ? rawSplash : "";
     }, 3000);
     return () => clearInterval(interval);
   });
 </script>
 
-<main>
-  <div id="occupancy" style:--count={facilities.length}>
-    {#each facilities as facility (facility.name)}
-      <div class="facility">
-        <div class="facility-name">{facility.name}</div>
-        <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
-          {#each facility.count as count (count.name)}
-            <div class="facility-count">
-              {#if facility.count.length != 1}
-                <div class="facility-count-name text">{count.name}</div>
-              {:else}
-                {#if facilities.length == 1}
-                  <div class="facility-count-name text">Available Spaces</div>
+{#if splashMessage}
+  <main>
+    {@html splashMessage}
+  </main>
+{:else}
+  <main>
+    <div id="occupancy" style:--count={facilities.length}>
+      {#each facilities as facility (facility.name)}
+        <div class="facility">
+          <div class="facility-name">{facility.name}</div>
+          <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
+            {#each facility.count as count (count.name)}
+              <div class="facility-count">
+                {#if facility.count.length != 1}
+                  <div class="facility-count-name text">{count.name}</div>
                 {:else}
-                  <div class="facility-count-name text">Available<br>Spaces</div>
+                  {#if facilities.length == 1}
+                    <div class="facility-count-name text">Available Spaces</div>
+                  {:else}
+                    <div class="facility-count-name text">Available<br>Spaces</div>
+                  {/if}
                 {/if}
-              {/if}
-              <div class="facility-count-value text">
-                {#if count.full}
-                  Full
-                {:else}
-                  <NumberFlow value={count.value} format={{ useGrouping: false }} />
-                {/if}
+                <div class="facility-count-value text">
+                  {#if count.full}
+                    Full
+                  {:else}
+                    <NumberFlow value={count.value} format={{ useGrouping: false }} />
+                  {/if}
+                </div>
               </div>
-            </div>
-          {/each}
+            {/each}
+          </div>
         </div>
-      </div>
-    {/each}
-  </div>
-  <div id="tagline">
-    <Paw />
-    <Ticker text={taglineMessage} />
-  </div>
-</main>
+      {/each}
+    </div>
+    <div id="tagline">
+      <Paw />
+      <Ticker text={taglineMessage} />
+    </div>
+  </main>
+{/if}
 
 <style>
   :global(html, body) {
