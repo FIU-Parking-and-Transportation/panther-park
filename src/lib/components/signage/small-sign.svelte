@@ -145,7 +145,7 @@
                 {#if count.full}
                   Full
                 {:else}
-                  <NumberFlow value={count.value} />
+                  <NumberFlow value={count.value} format={{ useGrouping: false }} />
                 {/if}
               </div>
             </div>
