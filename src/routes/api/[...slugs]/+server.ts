@@ -12,6 +12,7 @@ interface FacilityListItem {
   id: string;
   name: string;
   full_name: string;
+  display_hidden: boolean;
   latitude: number;
   longitude: number;
 }
@@ -59,6 +60,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             id,
             name,
             full_name,
+            display_hidden,
             ST_Y(location_geog::geometry) AS latitude,
             ST_X(location_geog::geometry) AS longitude
           FROM parking_facility
@@ -75,7 +77,7 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
     {
       response: {
-        200: t.Array(t.Object({ id: t.String(), name: t.String(), full_name: t.String(), latitude: t.Number(), longitude: t.Number() })),
+        200: t.Array(t.Object({ id: t.String(), name: t.String(), full_name: t.String(), display_hidden: t.Boolean(), latitude: t.Number(), longitude: t.Number() })),
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "List parking facilities" },
@@ -432,6 +434,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               id                uuid PRIMARY KEY,
               name              text NOT NULL UNIQUE,
               full_name         text NOT NULL,
+              display_hidden    boolean NOT NULL DEFAULT false,
               current_occupancy jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
               max_occupancy     jsonb NOT NULL DEFAULT '{"student": 0, "other": 0}'::jsonb,
               location_geog     geography(POINT, 4326) NOT NULL,
