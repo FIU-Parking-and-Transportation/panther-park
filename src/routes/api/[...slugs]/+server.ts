@@ -32,7 +32,6 @@ export interface DigitalSign {
   latitude: number;
   longitude: number;
   compass_heading: number | null;
-  enable_wayfinding: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -137,8 +136,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             attributes,
             ST_Y(location_geog::geometry) AS latitude,
             ST_X(location_geog::geometry) AS longitude,
-            compass_heading,
-            enable_wayfinding
+            compass_heading
           FROM digital_sign
           ORDER BY name;
         `;
@@ -161,7 +159,6 @@ const app = new Elysia({ prefix: "/api/v1" })
             latitude: t.Number(),
             longitude: t.Number(),
             compass_heading: t.Union([t.Number(), t.Null()]),
-            enable_wayfinding: t.Boolean(),
           }),
         ),
         500: t.Object({ error: t.String() }),
@@ -182,8 +179,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             attributes,
             ST_Y(location_geog::geometry) AS latitude,
             ST_X(location_geog::geometry) AS longitude,
-            compass_heading,
-            enable_wayfinding
+            compass_heading
           FROM digital_sign
           WHERE id = ${params.id}::uuid;
         `;
@@ -209,7 +205,6 @@ const app = new Elysia({ prefix: "/api/v1" })
           latitude: t.Number(),
           longitude: t.Number(),
           compass_heading: t.Union([t.Number(), t.Null()]),
-          enable_wayfinding: t.Boolean(),
         }),
         404: t.Object({ error: t.String() }),
         500: t.Object({ error: t.String() }),
@@ -565,7 +560,6 @@ const app = new Elysia({ prefix: "/api/v1" })
               attributes       jsonb NOT NULL DEFAULT '{}'::jsonb,
               location_geog    geography(POINT, 4326) NOT NULL,
               compass_heading  integer NULL,
-              enable_wayfinding boolean NOT NULL DEFAULT false,
               updated_at       timestamptz NOT NULL DEFAULT now(),
               created_at       timestamptz NOT NULL DEFAULT now()
             );
@@ -740,8 +734,8 @@ const app = new Elysia({ prefix: "/api/v1" })
             INSERT INTO digital_sign (id, name, attributes, location_geog)
             VALUES ('e840abf8-767f-439d-90ad-0aee196e4a83', '107th Ave', '{"ip": "10.104.241.15", "facilities": [ "PG1", "PG2", "PG3", "PG4", "PG5", "PG6" ], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3693, 25.7597), 4326)::geography)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading, enable_wayfinding)
-            VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', '{"ip": "10.101.19.213", "facilities": [ "PG5", "Lot 1" ], "overflow_facilities": ["PG4"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7597), 4326)::geography, 270, true)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', '{"ip": "10.101.19.213", "facilities": [ "PG4", "PG5" ], "overflow_facilities": ["PG4"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7597), 4326)::geography, 270)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
             VALUES ('006be44d-fe24-472b-aece-de90517a3243', '109th Ave', '{"ip": "10.101.20.49", "facilities": [ "PG5", "PG4" ], "overflow_facilities": ["Lot 1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3725, 25.7608), 4326)::geography)
@@ -752,11 +746,11 @@ const app = new Elysia({ prefix: "/api/v1" })
             INSERT INTO digital_sign (id, name, attributes, location_geog)
             VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', '{"ip": "10.100.74.72", "facilities": [ "PG2", "PG1" ], "overflow_facilities": ["Lot 5"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7545), 4326)::geography)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading, enable_wayfinding)
-            VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"ip": "10.104.241.11", "facilities": [ "Lot 1" ], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7606), 4326)::geography, 180, true)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"ip": "10.104.241.11", "facilities": [ "PG5" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7606), 4326)::geography, 180)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading, enable_wayfinding)
-            VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"ip": "10.101.19.152", "facilities": [ "PG5", "Lot 1" ], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography, 90, true)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"ip": "10.101.19.152", "facilities": [ "PG5", "Lot 3" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography, 90)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
             VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 Presidents House', '{"ip": "10.100.87.111", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3700, 25.7550), 4326)::geography)
