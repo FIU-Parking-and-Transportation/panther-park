@@ -7,6 +7,7 @@
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import NumberFlow from "@number-flow/svelte";
   import Ticker from "$lib/components/ticker.svelte";
+  import WayfindingArrow from "../wayfinding-arrow.svelte";
 
   interface FacilityDisplay {
     name: string;
