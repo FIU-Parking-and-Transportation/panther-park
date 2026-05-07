@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { SvelteMap } from "svelte/reactivity";
   import { treaty } from "@elysiajs/eden";
   import type { App } from "elysia-api";
   import type { FacilityOccupancy } from "elysia-api";
@@ -25,6 +26,11 @@
   let overflowFacilitiesProp = $state<string[]>([]);
   let taglineMessage = $state("Please link your plate!");
   let splashMessage = $state("");
+  let enableWayfinding = $state(false);
+  let signLatitude = $state(0);
+  let signLongitude = $state(0);
+  let signCompassHeading = $state<number | null>(null);
+  let facilityLocations = new SvelteMap<string, { latitude: number; longitude: number }>();
 
   const decisionCategories = ["student", "total"];
 
@@ -53,6 +59,15 @@
 
   function resolve(name: string): FacilityOccupancy | undefined {
     return (rawData ?? []).find((r) => r.name === name);
+  }
+
+  function computeBearing(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
+    const lat1 = (fromLat * Math.PI) / 180;
+    const lat2 = (toLat * Math.PI) / 180;
+    const dLon = ((toLon - fromLon) * Math.PI) / 180;
+    const y = Math.sin(dLon) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+    return (Math.round(((Math.atan2(y, x) * (180 / Math.PI) + 360) % 360) / 45) * 45) % 360;
   }
 
   let facilities = $derived.by<FacilityDisplay[]>(() => {
@@ -89,8 +104,14 @@
       return data as DigitalSign;
     }
 
+    async function fetchFacilities() {
+      const { data, error } = await api.api.v1.facilities.get();
+      if (error) throw Error;
+      return data;
+    }
+
     async function fetchAll() {
-      const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
+      const [occupancyData, signData, facilitiesData] = await Promise.all([fetchOccupancy(), fetchSign(), fetchFacilities()]);
       rawData = occupancyData;
       const rawFacilities = signData.attributes["facilities"];
       if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
@@ -106,6 +127,14 @@
       }
       const rawSplash = signData.attributes["splash_message"];
       splashMessage = typeof rawSplash === "string" ? rawSplash : "";
+      enableWayfinding = signData.attributes["enable_wayfinding"] === true;
+      signLatitude = signData.latitude;
+      signLongitude = signData.longitude;
+      signCompassHeading = signData.compass_heading;
+      facilityLocations.clear();
+      for (const f of facilitiesData) {
+        facilityLocations.set(f.name, { latitude: f.latitude, longitude: f.longitude });
+      }
     }
 
     fetchAll();
@@ -125,6 +154,10 @@
       taglineMessage = (typeof rawTagline === "string" && rawTagline !== "") ? rawTagline : "Please link your plate!";
       const rawSplash = signData.attributes["splash_message"];
       splashMessage = typeof rawSplash === "string" ? rawSplash : "";
+      enableWayfinding = signData.attributes["enable_wayfinding"] === true;
+      signLatitude = signData.latitude;
+      signLongitude = signData.longitude;
+      signCompassHeading = signData.compass_heading;
     }, 3000);
     return () => clearInterval(interval);
   });
@@ -139,7 +172,25 @@
     <div id="occupancy" style:--count={facilities.length}>
       {#each facilities as facility (facility.name)}
         <div class="facility">
-          <div class="facility-name">{facility.name}</div>
+          <div class="facility-name">
+            {#if enableWayfinding && signCompassHeading !== null}
+              {@const loc = facilityLocations.get(facility.name)}
+              {#if loc}
+                {@const bearing = (computeBearing(signLatitude, signLongitude, loc.latitude, loc.longitude) - signCompassHeading + 360) % 360}
+                {#if bearing >= 180}
+                  <WayfindingArrow degrees={bearing} />
+                {/if}
+                {facility.name}
+                {#if bearing < 180}
+                  <WayfindingArrow degrees={bearing} />
+                {/if}
+              {:else}
+                {facility.name}
+              {/if}
+            {:else}
+              {facility.name}
+            {/if}
+          </div>
           <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
             {#each facility.count as count (count.name)}
               <div class="facility-count">
