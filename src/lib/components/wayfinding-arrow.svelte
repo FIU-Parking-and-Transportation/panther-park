@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  import { MousePointer2 } from "@lucide/svelte";
+  import { Navigation2 } from "@lucide/svelte";
 
   interface Props {
     degrees: number;
@@ -11,4 +11,4 @@
   let { degrees, size = 48, class: className }: Props = $props();
 </script>
 
-<MousePointer2 {size} class={cn(className)} style="width: 1em; height: 1em; transform: rotate({degrees + 45}deg)" />
+<Navigation2 {size} class={cn(className)} style="width: 1.0em; height: 1.0em; padding: 0px 1px; transform: rotate({degrees}deg) translateY(-0.05em)" />
