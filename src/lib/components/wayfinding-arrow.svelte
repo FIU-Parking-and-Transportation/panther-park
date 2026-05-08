@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  import { MousePointer2 } from "@lucide/svelte";
+  import { ArrowUp } from "@lucide/svelte";
 
   interface Props {
     degrees: number;
@@ -11,4 +11,4 @@
   let { degrees, size = 48, class: className }: Props = $props();
 </script>
 
-<MousePointer2 {size} class={cn(className)} style="width: 1em; height: 1em; transform: rotate({degrees + 45}deg)" />
+<ArrowUp {size} class={cn(className)} style="width: 1.3em; height: 1.25em; transform: rotate({degrees}deg) translateY(-0.05em)" />
