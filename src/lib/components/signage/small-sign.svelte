@@ -6,7 +6,9 @@
   import type { FacilityOccupancy } from "elysia-api";
   import type { DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
-  import NumberFlow from "@number-flow/svelte";
+  import type NumberFlowComponent from "@number-flow/svelte";
+
+  let NumberFlow: typeof NumberFlowComponent | null = $state(null);
   import Ticker from "$lib/components/ticker.svelte";
   import WayfindingArrow from "../wayfinding-arrow.svelte";
 
@@ -90,6 +92,8 @@
   });
 
   onMount(() => {
+    import("@number-flow/svelte").then((mod) => { NumberFlow = mod.default; });
+
     const api = treaty<App>(window.location.origin);
 
     async function fetchOccupancy() {
@@ -206,8 +210,10 @@
                 <div class="facility-count-value text">
                   {#if count.full}
                     Full
-                  {:else}
+                  {:else if NumberFlow}
                     <NumberFlow value={count.value} format={{ useGrouping: false }} />
+                  {:else}
+                    {count.value}
                   {/if}
                 </div>
               </div>
