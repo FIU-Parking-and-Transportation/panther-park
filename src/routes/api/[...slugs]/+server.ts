@@ -290,51 +290,6 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
   )
 
-  // ── PATCH /api/v1/digital-signs/:id/splash-message ───────────────────────
-  .patch(
-    "/digital-signs/:id/splash-message",
-    async ({ params, body }) => {
-      try {
-        const rows = await sql`
-          UPDATE digital_sign
-          SET
-            attributes = attributes || jsonb_build_object('splash_message', ${body.splash_message}::text),
-            updated_at = now()
-          WHERE id = ${params.id}::uuid
-          RETURNING id;
-        `;
-        if (rows.length === 0) {
-          return status(404, { error: "Digital sign not found" });
-        }
-        return { success: true };
-      } catch (error: any) {
-        if (error instanceof SQL.PostgresError) {
-          console.error("DB error:", error.code, error.detail);
-          return status(500, { error: "Failed to update splash message" });
-        }
-        throw error;
-      }
-    },
-    {
-      params: t.Object({ id: t.String({ format: "uuid" }) }),
-      body: t.Object({ splash_message: t.String() }),
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        401: t.String(),
-        404: t.Object({ error: t.String() }),
-        500: t.Object({ error: t.String() }),
-      },
-      detail: { summary: "Set or clear the splash message for a digital sign" },
-      beforeHandle({ bearer, set, status }) {
-        const token = process.env.DB_OPERATIONS_TOKEN;
-        if (!token || bearer !== token) {
-          set.headers["WWW-Authenticate"] = `Bearer realm='api', error="invalid_token"`;
-          return status(401, "Unauthorized");
-        }
-      },
-    },
-  )
-
   // ── POST routes (bearer token required) ──────────────────────────────────
   .guard(
     {
@@ -854,6 +809,44 @@ const app = new Elysia({ prefix: "/api/v1" })
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "Update the tagline message of a digital sign" },
+    },
+  )
+
+  // ── PATCH /api/v1/digital-signs/:id/splash-message ───────────────────────
+  .patch(
+    "/digital-signs/:id/splash-message",
+    async ({ params, body }) => {
+      try {
+        const rows = await sql`
+          UPDATE digital_sign
+          SET
+            attributes = attributes || jsonb_build_object('splash_message', ${body.splash_message}::text),
+            updated_at = now()
+          WHERE id = ${params.id}::uuid
+          RETURNING id;
+        `;
+        if (rows.length === 0) {
+          return status(404, { error: "Digital sign not found" });
+        }
+        return { success: true };
+      } catch (error: any) {
+        if (error instanceof SQL.PostgresError) {
+          console.error("DB error:", error.code, error.detail);
+          return status(500, { error: "Failed to update splash message" });
+        }
+        throw error;
+      }
+    },
+    {
+      params: t.Object({ id: t.String({ format: "uuid" }) }),
+      body: t.Object({ splash_message: t.String() }),
+      response: {
+        200: t.Object({ success: t.Boolean() }),
+        401: t.String(),
+        404: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
+      },
+      detail: { summary: "Set or clear the splash message for a digital sign" },
     },
   )
 
