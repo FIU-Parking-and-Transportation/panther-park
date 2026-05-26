@@ -344,8 +344,25 @@ const app = new Elysia({ prefix: "/api/v1" })
         `;
       });
 
-      await Promise.allSettled(promises);
-      await sql`REFRESH MATERIALIZED VIEW v_parking_facility_occupancy;`.simple();
+      const results = await Promise.allSettled(promises);
+      const failures = results.filter((r) => r.status === "rejected");
+      if (failures.length > 0) {
+        console.error(
+          "Occupancy update errors:",
+          failures.map((r) => (r as PromiseRejectedResult).reason),
+        );
+        return status(500, { error: "Failed to update occupancy for some facilities" });
+      }
+
+      try {
+        await sql`REFRESH MATERIALIZED VIEW v_parking_facility_occupancy;`.simple();
+      } catch (error: any) {
+        if (error instanceof SQL.PostgresError) {
+          console.error("Materialized view refresh error:", error.code, error.detail);
+          return status(500, { error: "Failed to refresh occupancy view" });
+        }
+        throw error;
+      }
 
       return status(201, {
         success: true,
