@@ -618,7 +618,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               '8eb591ab-26b7-4aed-9198-d3bed23a6772',
               'Lot 1',
-              'Lot 1',
+              'Lot 1: NE Corner',
               '{"total": 0}',
               '{"total": 294}',
               ST_SetSRID(ST_MakePoint(-80.370383, 25.760132), 4326)::geography
@@ -627,7 +627,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               'bc8e761b-624e-4241-a4d5-7ab57712ea39',
               'Lot 3',
-              'Lot 3',
+              'Lot 3: SASC',
               '{"total": 0}',
               '{"total": 205}',
               ST_SetSRID(ST_MakePoint(-80.370555, 25.755151), 4326)::geography
@@ -636,7 +636,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               'eb97232b-c223-4f61-bb19-5cf1db73fec8',
               'Lot 4',
-              'Lot 4',
+              'Lot 4: Greek Houses',
               '{"total": 0}',
               '{"total": 213}',
               ST_SetSRID(ST_MakePoint(-80.371022, 25.753721), 4326)::geography
@@ -645,7 +645,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               'ff7165da-ff04-4835-b411-2d0be172773e',
               'Lot 5',
-              'Lot 5',
+              'Lot 5: WPAC',
               '{"total": 0}',
               '{"total": 505}',
               ST_SetSRID(ST_MakePoint(-80.370663, 25.752716), 4326)::geography
@@ -654,7 +654,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               'e0c24509-cd3c-454e-b289-325455d2950d',
               'Lot 7',
-              'Lot 7',
+              'Lot 7: Stadium',
               '{"total": 0}',
               '{"total": 382}',
               ST_SetSRID(ST_MakePoint(-80.380421, 25.752813), 4326)::geography
@@ -663,7 +663,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               '73d0e63e-43a2-4bb1-98e3-325aad8b2d6d',
               'Lot 9',
-              'Lot 9',
+              'Lot 9: ZEB',
               '{"total": 0}',
               '{"total": 584}',
               ST_SetSRID(ST_MakePoint(-80.378111, 25.758499), 4326)::geography
@@ -672,7 +672,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               'a6c13e1d-872f-4225-99fe-b8195f514fbb',
               'Lot 10',
-              'Lot 10',
+              'Lot 10: CCLC',
               '{"total": 0}',
               '{"total": 235}',
               ST_SetSRID(ST_MakePoint(-80.381231, 25.757195), 4326)::geography
@@ -681,7 +681,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES (
               '42de29ee-1955-419d-aca0-5ddce2028715',
               'Lot 13',
-              'Lot 13',
+              'Lot 13: UT',
               '{"total": 0}',
               '{"total": 77}',
               ST_SetSRID(ST_MakePoint(-80.376315, 25.755108), 4326)::geography
