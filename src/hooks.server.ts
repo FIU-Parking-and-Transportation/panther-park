@@ -1,8 +1,8 @@
-import { LOG_LEVEL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const start = (LOG_LEVEL === "verbose" || LOG_LEVEL === "debug") ? performance.now() : null;
+  const start = (env.LOG_LEVEL === "verbose" || env.LOG_LEVEL === "debug") ? performance.now() : null;
 
   const response = await resolve(event);
   if (start != null) {
