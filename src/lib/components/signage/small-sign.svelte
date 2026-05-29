@@ -24,6 +24,8 @@
   let { signId }: Props = $props();
 
   let rawData = $state<FacilityOccupancy[] | null>(null);
+  let fetchError = $state(false);
+  let initialized = $state(false);
   let facilitiesProp = $state<string[]>([]);
   let overflowFacilitiesProp = $state<string[]>([]);
   let taglineMessage = $state("Please link your plate!");
@@ -134,21 +136,32 @@
     }
 
     async function fetchAll(): Promise<void> {
-      const [occupancyData, signData, facilitiesData] = await Promise.all([fetchOccupancy(), fetchSign(), fetchFacilities()]);
-      rawData = occupancyData;
-      applySignData(signData);
-      facilityLocations.clear();
-      for (const f of facilitiesData) {
-        facilityLocations.set(f.name, { latitude: f.latitude, longitude: f.longitude });
+      try {
+        const [occupancyData, signData, facilitiesData] = await Promise.all([fetchOccupancy(), fetchSign(), fetchFacilities()]);
+        rawData = occupancyData;
+        applySignData(signData);
+        facilityLocations.clear();
+        for (const f of facilitiesData) {
+          facilityLocations.set(f.name, { latitude: f.latitude, longitude: f.longitude });
+        }
+        initialized = true;
+        fetchError = false;
+      } catch {
+        fetchError = true;
       }
     }
 
     fetchAll();
 
     const interval = setInterval(async () => {
-      const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
-      rawData = occupancyData;
-      applySignData(signData);
+      try {
+        const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
+        rawData = occupancyData;
+        applySignData(signData);
+        fetchError = false;
+      } catch {
+        fetchError = true;
+      }
     }, 3000);
     return () => clearInterval(interval);
   });
@@ -157,6 +170,10 @@
 {#if splashMessage}
   <main>
     {@html splashMessage}
+  </main>
+{:else if fetchError && !initialized}
+  <main>
+    {@html `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;border:2px solid #D1A644;box-sizing:border-box;"><p style="color:white;font-size:14vmin;font-weight:bold;text-transform:uppercase;margin:0;line-height:1.4;text-align:center;max-width:80%;">We &#x2764;&#xFE0F; Our Panthers<br>Please Drive Carefully</p></div>`}
   </main>
 {:else}
   <main>
