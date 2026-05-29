@@ -114,38 +114,7 @@
       return data;
     }
 
-    async function fetchAll() {
-      const [occupancyData, signData, facilitiesData] = await Promise.all([fetchOccupancy(), fetchSign(), fetchFacilities()]);
-      rawData = occupancyData;
-      const rawFacilities = signData.attributes["facilities"];
-      if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
-        facilitiesProp = rawFacilities as string[];
-      }
-      const rawOverflow = signData.attributes["overflow_facilities"];
-      if (Array.isArray(rawOverflow) && rawOverflow.every((item) => typeof item === "string")) {
-        overflowFacilitiesProp = rawOverflow as string[];
-      }
-      const rawTagline = signData.attributes["tagline_message"];
-      if (typeof rawTagline === "string" && rawTagline !== "") {
-        taglineMessage = rawTagline;
-      }
-      const rawSplash = signData.attributes["splash_message"];
-      splashMessage = typeof rawSplash === "string" ? rawSplash : "";
-      enableWayfinding = signData.attributes["enable_wayfinding"] === true;
-      signLatitude = signData.latitude;
-      signLongitude = signData.longitude;
-      signCompassHeading = signData.compass_heading;
-      facilityLocations.clear();
-      for (const f of facilitiesData) {
-        facilityLocations.set(f.name, { latitude: f.latitude, longitude: f.longitude });
-      }
-    }
-
-    fetchAll();
-
-    const interval = setInterval(async () => {
-      const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
-      rawData = occupancyData;
+    function applySignData(signData: DigitalSign): void {
       const rawFacilities = signData.attributes["facilities"];
       if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
         facilitiesProp = rawFacilities as string[];
@@ -162,6 +131,24 @@
       signLatitude = signData.latitude;
       signLongitude = signData.longitude;
       signCompassHeading = signData.compass_heading;
+    }
+
+    async function fetchAll(): Promise<void> {
+      const [occupancyData, signData, facilitiesData] = await Promise.all([fetchOccupancy(), fetchSign(), fetchFacilities()]);
+      rawData = occupancyData;
+      applySignData(signData);
+      facilityLocations.clear();
+      for (const f of facilitiesData) {
+        facilityLocations.set(f.name, { latitude: f.latitude, longitude: f.longitude });
+      }
+    }
+
+    fetchAll();
+
+    const interval = setInterval(async () => {
+      const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
+      rawData = occupancyData;
+      applySignData(signData);
     }, 3000);
     return () => clearInterval(interval);
   });
