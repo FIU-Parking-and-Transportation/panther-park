@@ -746,7 +746,7 @@ const app = new Elysia({ prefix: "/api/v1" })
             VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"ip": "10.101.19.152", "facilities": [ "PG5", "Lot 3" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography, 90)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 Presidents House', '{"ip": "10.100.87.111", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3700, 25.7550), 4326)::geography)
+            VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 Presidents House', '{"ip": "10.100.87.181", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3700, 25.7550), 4326)::geography)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog)
             VALUES ('e51f3f5d-57ce-46ad-a2f7-c267f46ae6d7', 'Lot 3 SASC', '{"ip": "10.100.87.141", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7563), 4326)::geography)
