@@ -294,6 +294,51 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
   )
 
+  // ── GET /api/v1/health/live ───────────────────────────────────────────────
+  .get(
+    "/health/live",
+    () => ({ status: "ok", timestamp: new Date().toISOString() }),
+    {
+      response: {
+        200: t.Object({ status: t.String(), timestamp: t.String() }),
+      },
+      detail: { summary: "Confirm the server is running" },
+    },
+  )
+
+  // ── GET /api/v1/health/ready ──────────────────────────────────────────────
+  .get(
+    "/health/ready",
+    async () => {
+      const timestamp = new Date().toISOString();
+      try {
+        await sql`SELECT version();`;
+        return { status: "ok", timestamp, checks: { database: "ok" } };
+      } catch (error: any) {
+        console.error(
+          "Health check DB error:",
+          error instanceof SQL.PostgresError ? error.code : error,
+        );
+        return status(503, { status: "error", timestamp, checks: { database: "error" } });
+      }
+    },
+    {
+      response: {
+        200: t.Object({
+          status: t.String(),
+          timestamp: t.String(),
+          checks: t.Object({ database: t.String() }),
+        }),
+        503: t.Object({
+          status: t.String(),
+          timestamp: t.String(),
+          checks: t.Object({ database: t.String() }),
+        }),
+      },
+      detail: { summary: "Confirm the server and database are available" },
+    },
+  )
+
   // ── POST routes (bearer token required) ──────────────────────────────────
   .guard(
     {

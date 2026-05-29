@@ -36,4 +36,6 @@ COPY --from=prerelease /usr/src/app/package.json .
 # run the app
 USER bun
 EXPOSE 3000/tcp
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/api/v1/health/live || exit 1
 ENTRYPOINT [ "bun", "run", "build/index.js" ]
