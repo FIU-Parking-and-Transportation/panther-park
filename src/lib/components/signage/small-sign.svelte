@@ -212,7 +212,7 @@
                   {/if}
                 {/if}
                 <div class="facility-count-value text">
-                  {#if count.full}
+                  {#if count.full || count.value < 10}
                     Full
                   {:else if NumberFlow}
                     <NumberFlow value={count.value} format={{ useGrouping: false }} />
