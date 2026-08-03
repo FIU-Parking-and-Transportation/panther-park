@@ -36,7 +36,7 @@ function getBarColor(percentage: number): string {
   if (percentage < 70) {
     return '#22C55E';
   } else if (percentage < 90) {
-    return '#EAB308';
+    return '#D1A644';
   } else {
     return '#EF4444';
   }
@@ -62,13 +62,13 @@ function getBarColor(percentage: number): string {
   <div class="count cell">
     <div class="progress-bar">
       <div class="progress-fill" style:width={student}% style:background-color={getBarColor(student)}></div>
-      <span class="percent-label">{student}%</span>
+      <span class="percent-label">{student >= 100 ? "Full" : student + "%"}</span>
     </div>
   </div>
   <div class="count cell">
     <div class="progress-bar">
       <div class="progress-fill" style:width={other}% style:background-color={getBarColor(other)}></div>
-      <span class="percent-label">{other}%</span>
+      <span class="percent-label">{other >= 100 ? "Full" : other + "%"}</span>
     </div>
   </div>
 {/snippet}
@@ -114,7 +114,7 @@ main {
 .progress-bar {
   width: 35cqb;
   height: 10cqb;
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 2cqb;
   position: relative;
 }
