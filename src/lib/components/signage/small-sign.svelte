@@ -152,16 +152,8 @@
     }
 
     fetchAll();
-
     const interval = setInterval(async () => {
-      try {
-        const [occupancyData, signData] = await Promise.all([fetchOccupancy(), fetchSign()]);
-        rawData = occupancyData;
-        applySignData(signData);
-        fetchError = false;
-      } catch {
-        fetchError = true;
-      }
+      fetchAll();
     }, 3000);
     return () => clearInterval(interval);
   });
