@@ -116,6 +116,7 @@
       return data;
     }
 
+    // Applies sign data from parameter to global variables
     function applySignData(signData: DigitalSign): void {
       const rawFacilities = signData.attributes["facilities"];
       if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
@@ -130,9 +131,9 @@
       const rawSplash = signData.attributes["splash_message"];
       splashMessage = typeof rawSplash === "string" ? rawSplash : "";
       enableWayfinding = signData.attributes["enable_wayfinding"] === true;
-      signLatitude = signData.latitude;
-      signLongitude = signData.longitude;
-      signCompassHeading = signData.compass_heading;
+      signLatitude = typeof signData.latitude === "number" ? signData.latitude : 0;
+      signLongitude = typeof signData.longitude === "number" ? signData.longitude : 0;
+      signCompassHeading = typeof signData.compass_heading === "number" ? signData.compass_heading : null;
     }
 
     async function fetchAll(): Promise<void> {
