@@ -66,12 +66,17 @@
   }
 
   function computeBearing(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
-    const lat1 = (fromLat * Math.PI) / 180;
-    const lat2 = (toLat * Math.PI) / 180;
-    const dLon = ((toLon - fromLon) * Math.PI) / 180;
+    const deg2rad = (deg: number) => (deg * Math.PI) / 180;
+    const lat1 = deg2rad(fromLat);
+    const lat2 = deg2rad(toLat);
+    const dLon = deg2rad(toLon - fromLon);
+
     const y = Math.sin(dLon) * Math.cos(lat2);
     const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-    return (Math.round(((Math.atan2(y, x) * (180 / Math.PI) + 360) % 360) / 45) * 45) % 360;
+
+    let bearing = (Math.atan2(y, x) * 180) / Math.PI;
+    bearing = (bearing + 360) % 360;
+    return Math.round(bearing / 25) * 25 % 360;
   }
 
   let facilities = $derived.by<FacilityDisplay[]>(() => {
@@ -178,19 +183,12 @@
               {@const loc = facilityLocations.get(facility.name)}
               {#if loc}
                 {@const bearing = (computeBearing(signLatitude, signLongitude, loc.latitude, loc.longitude) - signCompassHeading + 360) % 360}
-                {#if bearing >= 180}
+                <span class="facility-name-arrow facility-name-arrow-{bearing >= 180 ? 'left' : 'right'}">
                   <WayfindingArrow degrees={bearing} />
-                {/if}
-                {facility.name}
-                {#if bearing < 180}
-                  <WayfindingArrow degrees={bearing} />
-                {/if}
-              {:else}
-                {facility.name}
+                </span>
               {/if}
-            {:else}
-              {facility.name}
             {/if}
+            <span class="facility-name-title">{facility.name}</span>
           </div>
           <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
             {#each facility.count as count (count.name)}
@@ -255,12 +253,22 @@
   }
   .facility-name {
     flex-grow: 0;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: "left title right";
     align-items: center;
     border-bottom: 1cqmin solid #b6862c;
     font-weight: bold;
     white-space: nowrap;
+  }
+  .facility-name-title {
+    grid-area: title;
+  }
+  .facility-name-arrow-left {
+    padding-left: 0.2em;
+  }
+  .facility-name-arrow-right {
+    padding: 0.2em;
   }
   .facility-counts {
     display: flex;

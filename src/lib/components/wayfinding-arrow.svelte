@@ -11,4 +11,4 @@
   let { degrees, size = 48, class: className }: Props = $props();
 </script>
 
-<Navigation2 {size} class={cn(className)} style="width: 1.0em; height: 1.0em; padding: 0px 1px; transform: rotate({degrees}deg) translateY(-0.05em)" />
+<Navigation2 {size} class={cn(className)} style="width: 1.0em; height: 0.8em; transform: rotate({degrees}deg);" />
