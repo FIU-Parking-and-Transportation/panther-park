@@ -769,65 +769,65 @@ const app = new Elysia({ prefix: "/api/v1" })
         try {
           await sql`
             DELETE FROM digital_sign;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('e840abf8-767f-439d-90ad-0aee196e4a83', '107th Ave', '{"ip": "10.104.241.15", "facilities": [ "PG1", "PG2", "PG3", "PG4", "PG5", "PG6" ], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3693, 25.7597), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('e840abf8-767f-439d-90ad-0aee196e4a83', '107th Ave', '{"ip": "10.104.241.15", "facilities": [ "PG1", "PG2", "PG3", "PG4", "PG5", "PG6" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3686611, 25.7597591), 4326)::geography, 180)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
-            VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', '{"ip": "10.101.19.213", "facilities": [ "PG4", "PG5" ], "overflow_facilities": ["PG4"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7597), 4326)::geography, 270)
-            ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('006be44d-fe24-472b-aece-de90517a3243', '109th Ave', '{"ip": "10.101.20.49", "facilities": [ "PG5", "PG4" ], "overflow_facilities": ["Lot 1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3725, 25.7608), 4326)::geography)
-            ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('dfc9c620-b917-4c1a-801b-a0295244dfa6', '112th Ave', '{"ip": "10.101.21.21", "facilities": [ "PG6", "PG3" ], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3762, 25.7602), 4326)::geography)
-            ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', '{"ip": "10.100.74.72", "facilities": [ "PG2", "PG1" ], "overflow_facilities": ["Lot 5"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7545), 4326)::geography)
+            VALUES ('94e53439-562b-4b6d-96c4-fb7ca279d0ac', '108th Ave', '{"ip": "10.101.19.213", "facilities": [ "PG4", "PG5" ], "overflow_facilities": ["PG4"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3706795, 25.7596622), 4326)::geography, 270)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
-            VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"ip": "10.104.241.11", "facilities": [ "PG5" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3707, 25.7606), 4326)::geography, 180)
+            VALUES ('006be44dfe24-472b-aece-de90517a3243', '109th Ave', '{"ip": "10.101.20.49", "facilities": [ "PG5", "PG4" ], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3725274, 25.7607108), 4326)::geography, 180)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
-            VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"ip": "10.101.19.152", "facilities": [ "PG5", "Lot 3" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3717, 25.7596), 4326)::geography, 90)
+            VALUES ('dfc9c620-b917-4c1a-801b-a0295244dfa6', '112th Ave', '{"ip": "10.101.21.21", "facilities": [ "PG6", "PG3" ], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3761957, 25.7601140), 4326)::geography, 180)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 Presidents House', '{"ip": "10.100.87.181", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3700, 25.7550), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', '{"ip": "10.100.74.72", "facilities": [ "PG2", "PG1" ], "overflow_facilities": ["Lot 5"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3706922, 25.7545028), 4326)::geography, 270)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('e51f3f5d-57ce-46ad-a2f7-c267f46ae6d7', 'Lot 3 SASC', '{"ip": "10.100.87.141", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3709, 25.7563), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"ip": "10.104.241.11", "facilities": [ "PG5" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3708502, 25.7604637), 4326)::geography, 0)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('1bd83594-2470-4650-8a1e-0f747d4dff50', 'Lot 5 North', '{"ip": "10.100.74.68", "facilities": ["Lot 5"], "overflow_facilities": ["Lot 7"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3711, 25.7533), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('5ed30114-35b0-4f9c-9063-eea474344212', 'Lot 1 Traffic', '{"ip": "10.101.19.152", "facilities": [ "PG5", "Lot 3" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3715719, 25.7595278), 4326)::geography, 90)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('1498c272-b2b9-432f-b97e-d4745aef332b', 'Lot 5 South', '{"ip": "10.100.74.124", "facilities": ["Lot 5"], "overflow_facilities": ["Lot 4"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3721, 25.7532), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('2dfeea70-0025-4787-b188-5869c80b209f', 'Lot 3 Presidents House', '{"ip": "10.100.87.181", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3699123, 25.7552611), 4326)::geography, 0)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('1fd130fa-20f6-4c13-b812-3f240066cd97', 'Lot 7 East', '{"ip": "10.101.146.46", "facilities": ["Lot 7"], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3787, 25.7533), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('e51f3f5d-57ce-46ad-a2f7-c267f46ae6d7', 'Lot 3 SASC', '{"ip": "10.100.87.141", "facilities": ["Lot 3"], "overflow_facilities": ["PG1"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3709905, 25.7559988), 4326)::geography, 150)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('71140ca3-7d00-4ba9-a221-424f3da6986f', 'Lot 7 West', '{"ip": "10.101.146.47", "facilities": ["Lot 7"], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3809, 25.7535), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('1bd83594-2470-4650-8a1e-0f747d4dff50', 'Lot 5 North', '{"ip": "10.100.74.68", "facilities": ["Lot 5"], "overflow_facilities": ["Lot 7"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3710891, 25.7533011), 4326)::geography, 240)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('85f6f0d3-1f3f-4bd7-93dd-4185f105f343', 'Lot 9 Solar House', '{"ip": "10.104.241.83", "facilities": ["Lot 9", "PG3"], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3767, 25.7594), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('1498c272-b2b9-432f-b97e-d4745aef332b', 'Lot 5 South', '{"ip": "10.100.74.124", "facilities": ["Lot 5"], "overflow_facilities": ["Lot 4"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3720689, 25.7531813), 4326)::geography, 285)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('051683d8-681a-4e59-82c4-7ed7b7764be2', 'Lot 9 Traffic', '{"ip": "10.104.240.6", "facilities": ["PG3", "Lot 9"], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3788, 25.7580), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('1fd130fa-20f6-4c13-b812-3f240066cd97', 'Lot 7 East', '{"ip": "10.101.146.46", "facilities": ["Lot 7"], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3787743, 25.7532630), 4326)::geography, 255)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('c4b99c4c-b171-4342-8a59-d0452462ee87', 'Lot 9 West', '{"ip": "10.101.135.48", "facilities": ["Lot 9", "PG3"], "overflow_facilities": ["Lot 10"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3790, 25.7589), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('71140ca3-7d00-4ba9-a221-424f3da6986f', 'Lot 7 West', '{"ip": "10.101.146.47", "facilities": ["Lot 7"], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3808265, 25.7534850), 4326)::geography, 110)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('d55ad231-f55b-41c3-b1ef-30f175b1d70c', 'PG3 Wall', '{"ip": "10.101.135.51", "facilities": ["PG3"], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3793, 25.7585), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('85f6f0d3-1f3f-4bd7-93dd-4185f105f343', 'Lot 9 Solar House', '{"ip": "10.104.241.83", "facilities": ["Lot 9", "PG3"], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3767802, 25.7594327), 4326)::geography, 270)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('235d784d-40ac-498c-b73a-0a6fff3d50d3', 'PG5 Wall', '{"ip": "10.101.19.59", "facilities": ["PG5"], "overflow_facilities": [], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3712, 25.7603), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('051683d8-681a-4e59-82c4-7ed7b7764be2', 'Lot 9 Traffic', '{"ip": "10.104.240.6", "facilities": ["PG3", "Lot 9"], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3789199, 25.7580548), 4326)::geography, 0)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('f4c3d563-c837-49f2-8915-b53937c5c622', 'PG6 East', '{"ip": "10.101.6.49", "facilities": ["PG3", "PG6"], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3739, 25.7598), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('c4b99c4c-b171-4342-8a59-d0452462ee87', 'Lot 9 West', '{"ip": "10.101.135.48", "facilities": ["Lot 9", "PG3"], "overflow_facilities": ["Lot 10"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3790604, 25.7589372), 4326)::geography, 195)
             ON CONFLICT DO NOTHING;
-            INSERT INTO digital_sign (id, name, attributes, location_geog)
-            VALUES ('de8bff49-2272-44ef-84f7-d56624e1e536', 'PG6 West', '{"ip": "10.101.6.10", "facilities": ["PG6", "PG4"], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": ""}', ST_SetSRID(ST_MakePoint(-80.3753, 25.7596), 4326)::geography)
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('d55ad231-f55b-41c3-b1ef-30f175b1d70c', 'PG3 Wall', '{"ip": "10.101.135.51", "facilities": ["PG3"], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3793269, 25.7585339), 4326)::geography, 270)
+            ON CONFLICT DO NOTHING;
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('235d784d-40ac-498c-b73a-0a6fff3d50d3', 'PG5 Wall', '{"ip": "10.101.19.59", "facilities": ["PG5"], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3710712, 25.7603363), 4326)::geography, 270)
+            ON CONFLICT DO NOTHING;
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('f4c3d563-c837-49f2-8915-b53937c5c622', 'PG6 East', '{"ip": "10.101.6.49", "facilities": ["PG3", "PG6"], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3739221, 25.7597501), 4326)::geography, 270)
+            ON CONFLICT DO NOTHING;
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('de8bff49-2272-44ef-84f7-d56624e1e536', 'PG6 West', '{"ip": "10.101.6.10", "facilities": ["PG6", "PG4"], "overflow_facilities": ["Lot 9"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.37529073753, 25.7595371), 4326)::geography, 90)
             ON CONFLICT DO NOTHING;
           `.simple();
         } catch (error: any) {
