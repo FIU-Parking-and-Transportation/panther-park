@@ -27,6 +27,19 @@ export interface FacilityOccupancy {
   max_occupancy: Record<string, number>;
 }
 
+interface RingFacilityRef {
+  id: string;
+  name: string;
+}
+
+export interface FacilityNext {
+  direction: "cw" | "ccw";
+  weight: number;
+  closed: boolean;
+  from: RingFacilityRef;
+  to: RingFacilityRef;
+}
+
 export interface DigitalSign {
   id: string;
   name: string;
@@ -125,6 +138,83 @@ const app = new Elysia({ prefix: "/api/v1" })
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "Get facility occupancy" },
+    },
+  )
+
+  // ── GET /api/v1/facilities/:id/next ───────────────────────────────────────
+  .get(
+    "/facilities/:id/next",
+    async ({ params, query }) => {
+      const direction: "cw" | "ccw" = query.direction === "ccw" ? "ccw" : "cw";
+      try {
+        const current = await sql`
+          SELECT name FROM parking_facility WHERE id = ${params.id}::uuid;
+        `;
+        if (current.length === 0) {
+          return status(404, { error: "Facility not found" });
+        }
+        const currentName = (current as { name: string }[])[0].name;
+
+        let rows;
+        if (direction === "cw") {
+          const r = await sql`
+            SELECT
+              pf.id,
+              pf.name,
+              e.weight
+            FROM parking_facility_edge e
+            JOIN parking_facility pf ON pf.id = e.to_facility_id
+            WHERE e.from_facility_id = ${params.id}::uuid;
+          `;
+          rows = r as { id: string; name: string; weight: number }[];
+        } else {
+          const r = await sql`
+            SELECT
+              pf.id,
+              pf.name,
+              e.weight
+            FROM parking_facility_edge e
+            JOIN parking_facility pf ON pf.id = e.from_facility_id
+            WHERE e.to_facility_id = ${params.id}::uuid;
+          `;
+          rows = r as { id: string; name: string; weight: number }[];
+        }
+        if (rows.length === 0) {
+          return status(404, { error: "No adjacent facility in that direction" });
+        }
+        const adjacent = rows[0];
+
+        const result: FacilityNext = {
+          direction,
+          weight: adjacent.weight,
+          closed: adjacent.weight < 0,
+          from: { id: params.id, name: currentName },
+          to: { id: adjacent.id, name: adjacent.name },
+        };
+        return result;
+      } catch (error: any) {
+        if (error instanceof SQL.PostgresError) {
+          console.error("DB error:", error.code, error.detail);
+          return status(500, { error: "Failed to fetch next facility" });
+        }
+        throw error;
+      }
+    },
+    {
+      params: t.Object({ id: t.String({ format: "uuid" }) }),
+      query: t.Object({ direction: t.Optional(t.Union([t.Literal("cw"), t.Literal("ccw")])) }),
+      response: {
+        200: t.Object({
+          direction: t.Union([t.Literal("cw"), t.Literal("ccw")]),
+          weight: t.Integer(),
+          closed: t.Boolean(),
+          from: t.Object({ id: t.String(), name: t.String() }),
+          to: t.Object({ id: t.String(), name: t.String() }),
+        }),
+        404: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
+      },
+      detail: { summary: "Get an adjacent facility" },
     },
   )
 
@@ -586,6 +676,15 @@ const app = new Elysia({ prefix: "/api/v1" })
               updated_at       timestamptz NOT NULL DEFAULT now(),
               created_at       timestamptz NOT NULL DEFAULT now()
             );
+
+            CREATE TABLE IF NOT EXISTS parking_facility_edge (
+              id               uuid PRIMARY KEY,
+              from_facility_id uuid NOT NULL REFERENCES parking_facility(id) ON DELETE CASCADE,
+              to_facility_id   uuid NOT NULL REFERENCES parking_facility(id) ON DELETE CASCADE,
+              weight           integer NOT NULL DEFAULT 1,
+              created_at       timestamptz NOT NULL DEFAULT now(),
+              UNIQUE (from_facility_id, to_facility_id)
+            );
           `.simple();
         } catch (error: any) {
           if (error instanceof SQL.PostgresError) {
@@ -765,6 +864,39 @@ const app = new Elysia({ prefix: "/api/v1" })
         return status(200, { success: true, message: "Facilities seeded successfully" });
       }
 
+      if (body.action === "seedEdges") {
+        try {
+          await sql`
+            DELETE FROM parking_facility_edge;
+            INSERT INTO parking_facility_edge (id, from_facility_id, to_facility_id, weight)
+            VALUES
+              ('a1000001-0000-4000-8000-000000000001', '20b0aade-772a-49de-8364-911c59cc2703', '8eb591ab-26b7-4aed-9198-d3bed23a6772', 1),
+              ('a1000001-0000-4000-8000-000000000002', '8eb591ab-26b7-4aed-9198-d3bed23a6772', '49b82e7a-9c50-4486-a946-fe4d8093ffd9', 1),
+              ('a1000001-0000-4000-8000-000000000003', '49b82e7a-9c50-4486-a946-fe4d8093ffd9', 'bc8e761b-624e-4241-a4d5-7ab57712ea39', 1),
+              ('a1000001-0000-4000-8000-000000000004', 'bc8e761b-624e-4241-a4d5-7ab57712ea39', '326db0dc-944d-4576-9346-0a935da30c63', 1),
+              ('a1000001-0000-4000-8000-000000000005', '326db0dc-944d-4576-9346-0a935da30c63', 'eb97232b-c223-4f61-bb19-5cf1db73fec8', 1),
+              ('a1000001-0000-4000-8000-000000000006', 'eb97232b-c223-4f61-bb19-5cf1db73fec8', 'ff7165da-ff04-4835-b411-2d0be172773e', 1),
+              ('a1000001-0000-4000-8000-000000000007', 'ff7165da-ff04-4835-b411-2d0be172773e', 'e0c24509-cd3c-454e-b289-325455d2950d', 1),
+              ('a1000001-0000-4000-8000-000000000008', 'e0c24509-cd3c-454e-b289-325455d2950d', '098db415-c8f3-478b-b652-b45e41556d39', 1),
+              ('a1000001-0000-4000-8000-000000000009', '098db415-c8f3-478b-b652-b45e41556d39', 'a6c13e1d-872f-4225-99fe-b8195f514fbb', 1),
+              ('a1000001-0000-4000-8000-00000000000a', 'a6c13e1d-872f-4225-99fe-b8195f514fbb', '73d0e63e-43a2-4bb1-98e3-325aad8b2d6d', 1),
+              ('a1000001-0000-4000-8000-00000000000b', '73d0e63e-43a2-4bb1-98e3-325aad8b2d6d', 'deb719ca-6a2e-4660-9936-931be37ebb53', 1),
+              ('a1000001-0000-4000-8000-00000000000c', 'deb719ca-6a2e-4660-9936-931be37ebb53', '9148e29e-32c3-4c49-81fa-c67db8021c5c', 1),
+              ('a1000001-0000-4000-8000-00000000000d', '9148e29e-32c3-4c49-81fa-c67db8021c5c', '20b0aade-772a-49de-8364-911c59cc2703', 1) 
+            ON CONFLICT (from_facility_id, to_facility_id) DO UPDATE SET weight = EXCLUDED.weight;
+          `.simple();
+        } catch (error: any) {
+          if (error instanceof SQL.PostgresError) {
+            console.log(error.code);
+            console.log(error.detail);
+            console.log(error.hint);
+            return status(500, { success: false, message: "Edges seed failed" });
+          }
+          throw error;
+        }
+        return status(200, { success: true, message: "Ring edges seeded successfully" });
+      }
+
       if (body.action === "seedSigns") {
         try {
           await sql`
@@ -846,7 +978,7 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
     {
       body: t.Object({
-        action: t.Union([t.Literal("seedDatabase"), t.Literal("seedFacilities"), t.Literal("seedSigns")]),
+        action: t.Union([t.Literal("seedDatabase"), t.Literal("seedFacilities"), t.Literal("seedSigns"), t.Literal("seedEdges")]),
       }),
       response: {
         200: t.Object({ success: t.Boolean(), message: t.String() }),
