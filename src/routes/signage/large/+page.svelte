@@ -2,28 +2,28 @@
 import { onMount } from 'svelte';
 import { treaty } from '@elysiajs/eden';
 import type { App } from 'elysia-api';
-import type { FacilityOccupancy } from 'elysia-api';
+import type { FacilityListItem } from 'elysia-api';
 
-let facilities = $state<FacilityOccupancy[] | null>(null);
+let facilities = $state<FacilityListItem[] | null>(null);
 
 onMount(() => {
   const api = treaty<App>(window.location.origin);
 
-  async function fetchOccupancy() {
-    const { data, error } = await api.api.v1.facilities.occupancy.get();
+  async function fetchFacilities() {
+    const { data, error } = await api.api.v1.facilities.get();
     if (error) throw Error;
-    return data;
+    return data as FacilityListItem[];
   }
 
-  fetchOccupancy().then((d) => { facilities = d; });
+  fetchFacilities().then((d) => { facilities = d; });
 
   const interval = setInterval(async () => {
-    facilities = await fetchOccupancy();
+    facilities = await fetchFacilities();
   }, 3000);
   return () => clearInterval(interval);
 })
 
-function calcPercentage( facility: FacilityOccupancy, type: "student" | "other" ): number {
+function calcPercentage( facility: FacilityListItem, type: "student" | "other" ): number {
   const curr = facility.current_occupancy[type];
   const max = facility.max_occupancy[type];
   if (curr <= 0 || max <= 0) {

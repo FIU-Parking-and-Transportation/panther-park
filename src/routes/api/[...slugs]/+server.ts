@@ -8,7 +8,7 @@ import bearer from "@elysiajs/bearer";
 // Shared interfaces
 // ---------------------------------------------------------------------------
 
-interface FacilityListItem {
+export interface FacilityListItem {
   id: string;
   name: string;
   full_name: string;
@@ -16,6 +16,8 @@ interface FacilityListItem {
   display_hidden: boolean;
   latitude: number;
   longitude: number;
+  current_occupancy: Record<string, number>;
+  max_occupancy: Record<string, number>;
 }
 
 export interface FacilityOccupancy {
@@ -73,15 +75,18 @@ const app = new Elysia({ prefix: "/api/v1" })
       try {
         const rows = await sql`
           SELECT
-            id,
-            name,
-            full_name,
-            type,
-            display_hidden,
-            ST_Y(location_geog::geometry) AS latitude,
-            ST_X(location_geog::geometry) AS longitude
-          FROM parking_facility
-          ORDER BY name;
+            pf.id,
+            pf.name,
+            pf.full_name,
+            pf.type,
+            pf.display_hidden,
+            ST_Y(pf.location_geog::geometry) AS latitude,
+            ST_X(pf.location_geog::geometry) AS longitude,
+            occ.current_occupancy,
+            occ.max_occupancy
+          FROM parking_facility pf
+          LEFT JOIN v_parking_facility_occupancy occ ON occ.id = pf.id
+          ORDER BY pf.name;
         `;
         return rows as FacilityListItem[];
       } catch (error: any) {
@@ -94,7 +99,17 @@ const app = new Elysia({ prefix: "/api/v1" })
     },
     {
       response: {
-        200: t.Array(t.Object({ id: t.String(), name: t.String(), full_name: t.String(), type: t.String(), display_hidden: t.Boolean(), latitude: t.Number(), longitude: t.Number() })),
+        200: t.Array(t.Object({
+          id: t.String(),
+          name: t.String(),
+          full_name: t.String(),
+          type: t.String(),
+          display_hidden: t.Boolean(),
+          latitude: t.Number(),
+          longitude: t.Number(),
+          current_occupancy: t.Record(t.String(), t.Number()),
+          max_occupancy: t.Record(t.String(), t.Number()),
+        })),
         500: t.Object({ error: t.String() }),
       },
       detail: { summary: "List parking facilities" },

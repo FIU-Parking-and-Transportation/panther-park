@@ -3,7 +3,7 @@
   import { SvelteMap } from "svelte/reactivity";
   import { treaty } from "@elysiajs/eden";
   import type { App } from "elysia-api";
-  import type { FacilityOccupancy } from "elysia-api";
+  import type { FacilityListItem } from "elysia-api";
   import type { DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import type NumberFlowComponent from "@number-flow/svelte";
@@ -23,7 +23,7 @@
 
   let { signId }: Props = $props();
 
-  let rawData = $state<FacilityOccupancy[] | null>(null);
+  let rawData = $state<FacilityListItem[] | null>(null);
   let fetchError = $state(false);
   let initialized = $state(false);
   let facilitiesProp = $state<string[]>([]);
@@ -38,7 +38,7 @@
 
   const decisionCategories = ["student", "total"];
 
-  function isFull(f: FacilityOccupancy): boolean {
+  function isFull(f: FacilityListItem): boolean {
     return Object.entries(f.current_occupancy).some(
       ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current >= (f.max_occupancy[key] ?? 0) && decisionCategories.includes(key)
     );
@@ -46,7 +46,7 @@
 
   const categoryOrder: string[] = ["student", "other", "total"];
 
-  function toDisplay(f: FacilityOccupancy): FacilityDisplay {
+  function toDisplay(f: FacilityListItem): FacilityDisplay {
     const counts = Object.entries(f.current_occupancy).map(([key, current]) => {
       const max = f.max_occupancy[key] ?? 0;
       return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: max > 0 && current >= max };
@@ -61,7 +61,7 @@
     return { name: f.name, count: counts };
   }
 
-  function resolve(name: string): FacilityOccupancy | undefined {
+  function resolve(name: string): FacilityListItem | undefined {
     return (rawData ?? []).find((r) => r.name === name);
   }
 
@@ -103,12 +103,6 @@
 
     const api = treaty<App>(window.location.origin);
 
-    async function fetchOccupancy() {
-      const { data, error } = await api.api.v1.facilities.occupancy.get();
-      if (error) throw Error;
-      return data;
-    }
-
     async function fetchSign() {
       const { data, error } = await api.api.v1["digital-signs"]({ id: signId }).get();
       if (error) throw Error;
@@ -118,7 +112,7 @@
     async function fetchFacilities() {
       const { data, error } = await api.api.v1.facilities.get();
       if (error) throw Error;
-      return data;
+      return data as FacilityListItem[];
     }
 
     // Applies sign data from parameter to global variables
@@ -143,8 +137,8 @@
 
     async function fetchAll(): Promise<void> {
       try {
-        const [occupancyData, signData, facilitiesData] = await Promise.all([fetchOccupancy(), fetchSign(), fetchFacilities()]);
-        rawData = occupancyData;
+        const [signData, facilitiesData] = await Promise.all([fetchSign(), fetchFacilities()]);
+        rawData = facilitiesData;
         applySignData(signData);
         facilityLocations.clear();
         for (const f of facilitiesData) {
