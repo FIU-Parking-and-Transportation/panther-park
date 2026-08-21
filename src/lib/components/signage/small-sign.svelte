@@ -318,7 +318,7 @@
   }
   @container occupancy style(--count: 2) {
     .facility-name {
-      font-size: 20cqb;
+      font-size: 17cqb;
       line-height: 1.3em;
     }
     @container counts style(--count-items: 1) {
@@ -332,7 +332,7 @@
   }
   @container occupancy style(--count: 3) {
     .facility-name {
-      font-size: 17cqb;
+      font-size: 11cqb;
     }
     @container counts style(--count-items: 1) {
       .facility-count-name { font-size: 9cqb; }
