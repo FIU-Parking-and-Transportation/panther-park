@@ -754,7 +754,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               'garage',
               '{"student": 0, "other": 0}',
               '{"student": 995, "other": 447}',
-              ST_SetSRID(ST_MakePoint(-80.373147, 25.760152), 4326)::geography
+              ST_SetSRID(ST_MakePoint(-80.3736621, 25.7600881), 4326)::geography
             ) ON CONFLICT DO NOTHING;
             INSERT INTO parking_facility (id, name, full_name, type, current_occupancy, max_occupancy, location_geog)
             VALUES (
@@ -930,6 +930,9 @@ const app = new Elysia({ prefix: "/api/v1" })
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
             VALUES ('2cd37731-7e9e-48f2-9de0-b255a126603e', '16th St', '{"ip": "10.100.74.72", "facilities": [ "PG2", "PG1" ], "overflow_facilities": ["Lot 5"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3707820, 25.7543561), 4326)::geography, 270)
+            ON CONFLICT DO NOTHING;
+            INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
+            VALUES ('31dc2e44-9d6c-11f1-9158-4c82a94cc85d', '16th St Presidents House', '{"ip": "10.100.74.72", "facilities": [ "Lot 5", "Lot 3" ], "overflow_facilities": ["PG5"], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3707820, 25.7543561), 4326)::geography, 270)
             ON CONFLICT DO NOTHING;
             INSERT INTO digital_sign (id, name, attributes, location_geog, compass_heading)
             VALUES ('134b5e1e-f71f-41b3-918a-8b69a364127b', 'Lot 1 North', '{"ip": "10.104.241.11", "facilities": [ "PG5" ], "overflow_facilities": [], "tagline_message": "", "splash_message": "", "enable_wayfinding": true}', ST_SetSRID(ST_MakePoint(-80.3708502, 25.7604637), 4326)::geography, 180)

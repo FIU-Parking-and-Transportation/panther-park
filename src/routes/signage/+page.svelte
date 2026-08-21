@@ -24,6 +24,7 @@
     "109th Ave": { href: "/signage/small/", width: 180, height: 135 },
     "112th Ave": { href: "/signage/small/", width: 180, height: 135 },
     "16th St": { href: "/signage/small/", width: 180, height: 135 },
+    "16th St Presidents House": { href: "/signage/small/", width: 180, height: 135 },
     "Lot 1 Traffic": { href: "/signage/small/", width: 180, height: 90 },
     "PG3 Wall": { href: "/signage/small/", width: 180, height: 90 },
     "PG5 Wall": { href: "/signage/small/", width: 180, height: 90 },
