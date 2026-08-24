@@ -23,10 +23,10 @@
 
   let { signId }: Props = $props();
 
-  let rawData = $state<FacilityListItem[] | null>(null);
+  let rawFacilitiesData = $state<FacilityListItem[] | null>(null);
   let fetchError = $state(false);
   let initialized = $state(false);
-  let facilitiesProp = $state<string[]>([]);
+  let facilitiesList = $state<string[]>([]);
   let overflowFacilitiesProp = $state<string[]>([]);
   let taglineMessage = $state("Please link your plate!");
   let splashMessage = $state("");
@@ -62,7 +62,7 @@
   }
 
   function resolve(name: string): FacilityListItem | undefined {
-    return (rawData ?? []).find((r) => r.name === name);
+    return (rawFacilitiesData ?? []).find((r) => r.name === name);
   }
 
   function computeBearing(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
@@ -80,16 +80,16 @@
   }
 
   let facilities = $derived.by<FacilityDisplay[]>(() => {
-    const primary = facilitiesProp.flatMap((name) => {
+    const primary = facilitiesList.flatMap((name) => {
       const f = resolve(name);
       return f ? [toDisplay(f)] : [];
     });
 
-    if (!primary.some((_, i) => isFull(resolve(facilitiesProp[i])!))) return primary;
+    if (!primary.some((_, i) => isFull(resolve(facilitiesList[i])!))) return primary;
 
     // Prefer the first non-full overflow not already in the primary list;
     // fall back to the first available overflow if all are full.
-    const primarySet = new Set(facilitiesProp);
+    const primarySet = new Set(facilitiesList);
     const candidates = overflowFacilitiesProp
       .filter((name) => !primarySet.has(name))
       .flatMap((name) => { const f = resolve(name); return f ? [f] : []; });
@@ -117,19 +117,19 @@
 
     // Applies sign data from parameter to global variables
     function applySignData(signData: DigitalSign): void {
-      const rawFacilities = signData.attributes["facilities"];
+      const rawFacilities = signData.attributes.facilities;
       if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
-        facilitiesProp = rawFacilities as string[];
+        facilitiesList = rawFacilities as string[];
       }
-      const rawOverflow = signData.attributes["overflow_facilities"];
+      const rawOverflow = signData.attributes.overflow_facilities;
       if (Array.isArray(rawOverflow) && rawOverflow.every((item) => typeof item === "string")) {
         overflowFacilitiesProp = rawOverflow as string[];
       }
-      const rawTagline = signData.attributes["tagline_message"];
+      const rawTagline = signData.attributes.tagline_message;
       taglineMessage = (typeof rawTagline === "string" && rawTagline !== "") ? rawTagline : "Please link your plate!";
-      const rawSplash = signData.attributes["splash_message"];
+      const rawSplash = signData.attributes.splash_message;
       splashMessage = typeof rawSplash === "string" ? rawSplash : "";
-      enableWayfinding = signData.attributes["enable_wayfinding"] === true;
+      enableWayfinding = signData.attributes.enable_wayfinding === true;
       signLatitude = typeof signData.latitude === "number" ? signData.latitude : 0;
       signLongitude = typeof signData.longitude === "number" ? signData.longitude : 0;
       signCompassHeading = typeof signData.compass_heading === "number" ? signData.compass_heading : null;
@@ -138,7 +138,7 @@
     async function fetchAll(): Promise<void> {
       try {
         const [signData, facilitiesData] = await Promise.all([fetchSign(), fetchFacilities()]);
-        rawData = facilitiesData;
+        rawFacilitiesData = facilitiesData;
         applySignData(signData);
         facilityLocations.clear();
         for (const f of facilitiesData) {
