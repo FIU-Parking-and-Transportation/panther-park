@@ -196,7 +196,7 @@
                     <div class="facility-count-name text">Available<br>Spaces</div>
                   {/if}
                 {/if}
-                <div class="facility-count-value text">
+                <div class="facility-count-value text" class:full={count.full || count.value < 10}>
                   {#if count.full || count.value < 10}
                     Full
                   {:else if NumberFlow}
@@ -281,6 +281,10 @@
   }
   .facility-count-value {
     color: #ffcc00;
+  }
+  .facility-count-value.full {
+    font-weight: 900;
+    letter-spacing: 0.08rem;
   }
   .text {
     display: flex;
