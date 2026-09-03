@@ -1,12 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
-  import { treaty } from "@elysiajs/eden";
-  import type { App } from "elysia-api";
-  import type { FacilityListItem } from "elysia-api";
-  import type { DigitalSign } from "elysia-api";
+  import type { FacilityListItem, DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import type NumberFlowComponent from "@number-flow/svelte";
+  import { fetchFacilities, isFull } from "$lib/facilities.js";
+  import { fetchSign } from "$lib/signs.js";
 
   let NumberFlow: typeof NumberFlowComponent | null = $state(null);
   import Ticker from "$lib/components/ticker.svelte";
@@ -36,27 +35,18 @@
   let signCompassHeading = $state<number | null>(null);
   let facilityLocations = new SvelteMap<string, { latitude: number; longitude: number }>();
 
-  const DECISION_CATEGORIES = ["student", "total"];
-  const FULL_VALUE = 10; 
-
-  function isFull(f: FacilityListItem): boolean {
-    return Object.entries(f.current_occupancy).some(
-      ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current + FULL_VALUE >= (f.max_occupancy[key] ?? 0) && DECISION_CATEGORIES.includes(key)
-    );
-  }
-
-  const categoryOrder: string[] = ["student", "other", "total"];
+  const CATEGORY_ORDER: string[] = ["student", "other", "total"];
 
   function toDisplay(f: FacilityListItem): FacilityDisplay {
     const counts = Object.entries(f.current_occupancy).map(([key, current]) => {
       const max = f.max_occupancy[key] ?? 0;
-      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: current + FULL_VALUE >= max };
+      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: isFull(f) };
     });
     counts.sort((a, b) => {
-      const ai = categoryOrder.indexOf(a.name);
-      const bi = categoryOrder.indexOf(b.name);
-      const aOrder = ai === -1 ? categoryOrder.length : ai;
-      const bOrder = bi === -1 ? categoryOrder.length : bi;
+      const ai = CATEGORY_ORDER.indexOf(a.name);
+      const bi = CATEGORY_ORDER.indexOf(b.name);
+      const aOrder = ai === -1 ? CATEGORY_ORDER.length : ai;
+      const bOrder = bi === -1 ? CATEGORY_ORDER.length : bi;
       return aOrder - bOrder;
     });
     return { name: f.name, count: counts };
@@ -102,20 +92,6 @@
   onMount(() => {
     import("@number-flow/svelte").then((mod) => { NumberFlow = mod.default; });
 
-    const api = treaty<App>(window.location.origin);
-
-    async function fetchSign() {
-      const { data, error } = await api.api.v1["digital-signs"]({ id: signId }).get();
-      if (error) throw Error;
-      return data as DigitalSign;
-    }
-
-    async function fetchFacilities() {
-      const { data, error } = await api.api.v1.facilities.get();
-      if (error) throw Error;
-      return data as FacilityListItem[];
-    }
-
     // Applies sign data from parameter to global variables
     function applySignData(signData: DigitalSign): void {
       const rawFacilities = signData.attributes.facilities;
@@ -138,7 +114,7 @@
 
     async function fetchAll(): Promise<void> {
       try {
-        const [signData, facilitiesData] = await Promise.all([fetchSign(), fetchFacilities()]);
+        const [signData, facilitiesData] = await Promise.all([fetchSign(signId), fetchFacilities()]);
         rawFacilitiesData = facilitiesData;
         applySignData(signData);
         facilityLocations.clear();

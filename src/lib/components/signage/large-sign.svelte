@@ -1,20 +1,11 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import { treaty } from "@elysiajs/eden";
-import type { App } from "elysia-api";
 import type { FacilityListItem } from "elysia-api";
+import { fetchFacilities } from "$lib/facilities.js";
 
 let facilities = $state<FacilityListItem[] | null>(null);
 
 onMount(() => {
-  const api = treaty<App>(window.location.origin);
-
-  async function fetchFacilities() {
-    const { data, error } = await api.api.v1.facilities.get();
-    if (error) throw Error;
-    return data as FacilityListItem[];
-  }
-
   fetchFacilities().then((d) => { facilities = d; });
 
   const interval = setInterval(async () => {
