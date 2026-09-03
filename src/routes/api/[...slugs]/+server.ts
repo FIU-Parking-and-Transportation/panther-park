@@ -823,7 +823,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               'Lot 5: WPAC',
               'lot',
               '{"total": 0}',
-              '{"total": 505}',
+              '{"total": 560}',
               ST_SetSRID(ST_MakePoint(-80.3719466, 25.7529841), 4326)::geography
             ) ON CONFLICT DO NOTHING;
             INSERT INTO parking_facility (id, name, full_name, type, current_occupancy, max_occupancy, location_geog)
@@ -863,7 +863,7 @@ const app = new Elysia({ prefix: "/api/v1" })
               'Lot 13: UT',
               'lot',
               '{"total": 0}',
-              '{"total": 77}',
+              '{"total": 80}',
               ST_SetSRID(ST_MakePoint(-80.376315, 25.755108), 4326)::geography
             ) ON CONFLICT DO NOTHING;
           `.simple();
