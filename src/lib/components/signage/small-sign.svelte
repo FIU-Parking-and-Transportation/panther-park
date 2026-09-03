@@ -36,11 +36,12 @@
   let signCompassHeading = $state<number | null>(null);
   let facilityLocations = new SvelteMap<string, { latitude: number; longitude: number }>();
 
-  const decisionCategories = ["student", "total"];
+  const DECISION_CATEGORIES = ["student", "total"];
+  const FULL_VALUE = 10; 
 
   function isFull(f: FacilityListItem): boolean {
     return Object.entries(f.current_occupancy).some(
-      ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current >= (f.max_occupancy[key] ?? 0) && decisionCategories.includes(key)
+      ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current + FULL_VALUE >= (f.max_occupancy[key] ?? 0) && DECISION_CATEGORIES.includes(key)
     );
   }
 
@@ -49,7 +50,7 @@
   function toDisplay(f: FacilityListItem): FacilityDisplay {
     const counts = Object.entries(f.current_occupancy).map(([key, current]) => {
       const max = f.max_occupancy[key] ?? 0;
-      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: max > 0 && current >= max };
+      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: current + FULL_VALUE >= max };
     });
     counts.sort((a, b) => {
       const ai = categoryOrder.indexOf(a.name);
@@ -196,8 +197,8 @@
                     <div class="facility-count-name text">Available<br>Spaces</div>
                   {/if}
                 {/if}
-                <div class="facility-count-value text" class:full={count.full || count.value < 10}>
-                  {#if count.full || count.value < 10}
+                <div class="facility-count-value text" class:full={count.full}>
+                  {#if count.full}
                     Full
                   {:else if NumberFlow}
                     <NumberFlow value={count.value} format={{ useGrouping: false }} />
