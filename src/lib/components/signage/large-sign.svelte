@@ -125,7 +125,7 @@ main {
   transform: translateY(-45%);
   text-align: center;
   color: white;
-  font-size: 9.5cqb;
+  font-size: 9cqb;
   z-index: 1;
 }
 </style>
