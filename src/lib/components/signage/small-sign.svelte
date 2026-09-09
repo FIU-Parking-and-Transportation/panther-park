@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { SvelteMap } from "svelte/reactivity";
   import type { FacilityListItem, DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import type NumberFlowComponent from "@number-flow/svelte";
@@ -22,20 +21,21 @@
 
   let { signId }: Props = $props();
 
-  let rawFacilitiesData = $state<FacilityListItem[] | null>(null);
+  let facilities = $state<FacilityListItem[]>();
+  let sign = $state<DigitalSign>();
   let fetchError = $state(false);
   let initialized = $state(false);
-  let facilitiesList = $state<string[]>([]);
-  let overflowFacilitiesProp = $state<string[]>([]);
-  let taglineMessage = $state("Please link your plate!");
-  let splashMessage = $state("");
-  let enableWayfinding = $state(false);
-  let signLatitude = $state(0);
-  let signLongitude = $state(0);
-  let signCompassHeading = $state<number | null>(null);
-  let facilityLocations = new SvelteMap<string, { latitude: number; longitude: number }>();
 
   const CATEGORY_ORDER: string[] = ["student", "other", "total"];
+
+  const facilitiesList = $derived((sign?.attributes.facilities as string[]) ?? []);
+  const overflowFacilities = $derived((sign?.attributes.overflow_facilities as string[]) ?? []);
+  const taglineMessage = $derived((sign?.attributes.tagline_message as string) ?? "");
+  const splashMessage = $derived((sign?.attributes.splash_message as string) ?? "");
+  const enableWayfinding = $derived(sign?.attributes.enable_wayfinding === true);
+  const signLatitude = $derived(sign?.latitude ?? 0);
+  const signLongitude = $derived(sign?.longitude ?? 0);
+  const signCompassHeading = $derived(sign?.compass_heading ?? null);
 
   function toDisplay(f: FacilityListItem): FacilityDisplay {
     const counts = Object.entries(f.current_occupancy).map(([key, current]) => {
@@ -53,7 +53,7 @@
   }
 
   function resolve(name: string): FacilityListItem | undefined {
-    return (rawFacilitiesData ?? []).find((r) => r.name === name);
+    return (facilities ?? []).find((r) => r.name === name);
   }
 
   function computeBearing(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
@@ -70,7 +70,7 @@
     return Math.round(bearing / 25) * 25 % 360;
   }
 
-  let facilities = $derived.by<FacilityDisplay[]>(() => {
+  let displayFacilities = $derived.by<FacilityDisplay[]>(() => {
     const primary = facilitiesList.flatMap((name) => {
       const f = resolve(name);
       return f ? [toDisplay(f)] : [];
@@ -81,7 +81,7 @@
     // Prefer the first non-full overflow not already in the primary list;
     // fall back to the first available overflow if all are full.
     const primarySet = new Set(facilitiesList);
-    const candidates = overflowFacilitiesProp
+    const candidates = overflowFacilities
       .filter((name) => !primarySet.has(name))
       .flatMap((name) => { const f = resolve(name); return f ? [f] : []; });
 
@@ -92,35 +92,11 @@
   onMount(() => {
     import("@number-flow/svelte").then((mod) => { NumberFlow = mod.default; });
 
-    // Applies sign data from parameter to global variables
-    function applySignData(signData: DigitalSign): void {
-      const rawFacilities = signData.attributes.facilities;
-      if (Array.isArray(rawFacilities) && rawFacilities.every((item) => typeof item === "string")) {
-        facilitiesList = rawFacilities as string[];
-      }
-      const rawOverflow = signData.attributes.overflow_facilities;
-      if (Array.isArray(rawOverflow) && rawOverflow.every((item) => typeof item === "string")) {
-        overflowFacilitiesProp = rawOverflow as string[];
-      }
-      const rawTagline = signData.attributes.tagline_message;
-      taglineMessage = (typeof rawTagline === "string" && rawTagline !== "") ? rawTagline : "Please link your plate!";
-      const rawSplash = signData.attributes.splash_message;
-      splashMessage = typeof rawSplash === "string" ? rawSplash : "";
-      enableWayfinding = signData.attributes.enable_wayfinding === true;
-      signLatitude = typeof signData.latitude === "number" ? signData.latitude : 0;
-      signLongitude = typeof signData.longitude === "number" ? signData.longitude : 0;
-      signCompassHeading = typeof signData.compass_heading === "number" ? signData.compass_heading : null;
-    }
-
     async function fetchAll(): Promise<void> {
       try {
-        const [signData, facilitiesData] = await Promise.all([fetchSign(signId), fetchFacilities()]);
-        rawFacilitiesData = facilitiesData;
-        applySignData(signData);
-        facilityLocations.clear();
-        for (const f of facilitiesData) {
-          facilityLocations.set(f.name, { latitude: f.latitude, longitude: f.longitude });
-        }
+        const [signData, facilityData] = await Promise.all([fetchSign(signId), fetchFacilities()]);
+        sign = signData;
+        facilities = facilityData;
         initialized = true;
         fetchError = false;
       } catch {
@@ -146,12 +122,12 @@
   </main>
 {:else}
   <main>
-    <div id="occupancy" style:--count={facilities.length}>
-      {#each facilities as facility (facility.name)}
+    <div id="occupancy" style:--count={displayFacilities.length}>
+      {#each displayFacilities as facility (facility.name)}
         <div class="facility">
           <div class="facility-name">
             {#if enableWayfinding && signCompassHeading !== null}
-              {@const loc = facilityLocations.get(facility.name)}
+              {@const loc = resolve(facility.name)}
               {#if loc}
                 {@const bearing = (computeBearing(signLatitude, signLongitude, loc.latitude, loc.longitude) - signCompassHeading + 360) % 360}
                 <span class="facility-name-arrow facility-name-arrow-{bearing >= 180 ? 'left' : 'right'}">
@@ -161,13 +137,13 @@
             {/if}
             <span class="facility-name-title">{facility.name}</span>
           </div>
-          <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && facilities.length == 1 ? 'row' : 'column'};">
+          <div class="facility-counts" style="--count-items: {facility.count.length}; flex-direction: {facility.count.length > 1 && displayFacilities.length == 1 ? 'row' : 'column'};">
             {#each facility.count as count (count.name)}
               <div class="facility-count">
                 {#if facility.count.length != 1}
                   <div class="facility-count-name text">{count.name}</div>
                 {:else}
-                  {#if facilities.length == 1}
+                  {#if displayFacilities.length == 1}
                     <div class="facility-count-name text">Available Spaces</div>
                   {:else}
                     <div class="facility-count-name text">Available<br>Spaces</div>
