@@ -14,7 +14,7 @@ onMount(() => {
   return () => clearInterval(interval);
 });
 
-function calcPercentage(facility: FacilityListItem, type: "student" | "other"): number {
+function calcPercentage(facility: FacilityListItem, type: string): number {
   const curr = facility.current_occupancy[type];
   const max = facility.max_occupancy[type];
   if (curr <= 0 || max <= 0) {
@@ -22,6 +22,10 @@ function calcPercentage(facility: FacilityListItem, type: "student" | "other"): 
   }
   const percentage = Math.ceil((curr / max) * 100);
   return Math.min(percentage, 100);
+}
+
+function isTotalOnly(facility: FacilityListItem): boolean {
+  return Object.keys(facility.max_occupancy).length === 1 && facility.max_occupancy["total"] !== undefined;
 }
 
 function getBarColor(percentage: number): string {
@@ -65,11 +69,25 @@ function getBarColor(percentage: number): string {
   </div>
 {/snippet}
 
+{#snippet totalRow(name: string, total: number)}
+  <div class="count-name cell">
+    {name}
+  </div>
+  <div class="count-total cell">
+    <div class="progress-bar">
+      <div class="progress-fill" style:width={total}% style:background-color={getBarColor(total)}></div>
+      <span class="percent-label">{total >= 100 ? "Full" : total + "%"}</span>
+    </div>
+  </div>
+{/snippet}
+
 <main>
   <div class="grid h-screen" style="grid-template-columns: 2fr 1fr 1fr;">
     {@render header()}
-    {#each facilities ?? [] as facility (facility.name)}
-      {#if facility.name.includes("PG")}
+    {#each (facilities ?? []).filter((f) => f.name.includes("PG") || f.name === "Lot 5").sort((a, b) => (a.name.startsWith("PG") ? 0 : 1) - (b.name.startsWith("PG") ? 0 : 1)) as facility (facility.name)}
+      {#if isTotalOnly(facility)}
+        {@render totalRow(facility.full_name, calcPercentage(facility, "total"))}
+      {:else}
         {@render countRow(facility.full_name, calcPercentage(facility, "student"), calcPercentage(facility, "other"))}
       {/if}
     {/each}
@@ -105,6 +123,10 @@ main {
 }
 .count {
   justify-content: center;
+}
+.count-total {
+  justify-content: center;
+  grid-column: span 2;
 }
 .progress-bar {
   width: 95%;
