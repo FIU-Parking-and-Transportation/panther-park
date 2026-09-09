@@ -2,6 +2,22 @@
 import { onMount } from "svelte";
 import type { FacilityListItem } from "elysia-api";
 import { fetchFacilities } from "$lib/facilities.js";
+import { ArrowUp, ArrowRight } from "@lucide/svelte";
+
+const DISPLAY_FACILITIES: [string, string][] = [
+  ["PG1", "ArrowUp"],
+  ["PG2", "ArrowUp"],
+  ["Lot 5", "ArrowUp"],
+  ["PG3", "ArrowRight"],
+  ["PG4", "ArrowRight"],
+  ["PG5", "ArrowRight"],
+  ["PG6", "ArrowRight"],
+];
+
+const ICON_BY_NAME: Record<string, typeof ArrowUp> = {
+  ArrowUp,
+  ArrowRight,
+};
 
 let facilities = $state<FacilityListItem[] | null>(null);
 
@@ -43,6 +59,7 @@ function getBarColor(percentage: number): string {
   <div class="header cell">
     Garages
   </div>
+  <div class="header cell"></div>
   <div class="header cell">
     Student
   </div>
@@ -51,10 +68,20 @@ function getBarColor(percentage: number): string {
   </div>
 {/snippet}
 
-{#snippet countRow(name: string, student: number, other: number)}
+{#snippet iconCell(iconName: string)}
+  {@const Icon = ICON_BY_NAME[iconName]}
+  <div class="icon cell">
+    {#if Icon}
+      <Icon size="1.8em" />
+    {/if}
+  </div>
+{/snippet}
+
+{#snippet countRow(name: string, student: number, other: number, iconName: string)}
   <div class="count-name cell">
     {name}
   </div>
+  {@render iconCell(iconName)}
   <div class="count cell">
     <div class="progress-bar">
       <div class="progress-fill" style:width={student}% style:background-color={getBarColor(student)}></div>
@@ -69,10 +96,11 @@ function getBarColor(percentage: number): string {
   </div>
 {/snippet}
 
-{#snippet totalRow(name: string, total: number)}
+{#snippet totalRow(name: string, total: number, iconName: string)}
   <div class="count-name cell">
     {name}
   </div>
+  {@render iconCell(iconName)}
   <div class="count-total cell">
     <div class="progress-bar">
       <div class="progress-fill" style:width={total}% style:background-color={getBarColor(total)}></div>
@@ -82,13 +110,16 @@ function getBarColor(percentage: number): string {
 {/snippet}
 
 <main>
-  <div class="grid h-screen" style="grid-template-columns: 2fr 1fr 1fr;">
+  <div class="grid h-screen" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
     {@render header()}
-    {#each (facilities ?? []).filter((f) => f.name.includes("PG") || f.name === "Lot 5").sort((a, b) => (a.name.startsWith("PG") ? 0 : 1) - (b.name.startsWith("PG") ? 0 : 1)) as facility (facility.name)}
-      {#if isTotalOnly(facility)}
-        {@render totalRow(facility.full_name, calcPercentage(facility, "total"))}
-      {:else}
-        {@render countRow(facility.full_name, calcPercentage(facility, "student"), calcPercentage(facility, "other"))}
+    {#each DISPLAY_FACILITIES as [facilityName, iconName] (facilityName)}
+      {@const facility = (facilities ?? []).find((f) => f.name === facilityName)}
+      {#if facility}
+        {#if isTotalOnly(facility)}
+          {@render totalRow(facility.full_name, calcPercentage(facility, "total"), iconName)}
+        {:else}
+          {@render countRow(facility.full_name, calcPercentage(facility, "student"), calcPercentage(facility, "other"), iconName)}
+        {/if}
       {/if}
     {/each}
   </div>
@@ -114,15 +145,19 @@ main {
 .header {
   justify-content: center;
   font-size: 8cqb;
+  padding-right: 5px;
   border-bottom: 3px solid #EAB308;
 }
 .count-name {
   justify-content: left;
   white-space: nowrap;
-  padding-right: 5px;
 }
 .count {
   justify-content: center;
+}
+.icon {
+  justify-content: center;
+  color: white;
 }
 .count-total {
   justify-content: center;
