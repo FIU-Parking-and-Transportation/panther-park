@@ -3,7 +3,7 @@
   import type { FacilityListItem, DigitalSign } from "elysia-api";
   import Paw from "$lib/assets/sticker-paw-solid-gold.svelte";
   import type NumberFlowComponent from "@number-flow/svelte";
-  import { fetchFacilities, isFull } from "$lib/facilities.js";
+  import { fetchFacilities, isFull, isFullCategory } from "$lib/facilities.js";
   import { fetchSign } from "$lib/signs.js";
 
   let NumberFlow: typeof NumberFlowComponent | null = $state(null);
@@ -40,7 +40,7 @@
   function toDisplay(f: FacilityListItem): FacilityDisplay {
     const counts = Object.entries(f.current_occupancy).map(([key, current]) => {
       const max = f.max_occupancy[key] ?? 0;
-      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: isFull(f) };
+      return { name: key, value: Math.max(max - Math.max(current, 0), 0), full: isFullCategory(f, key) };
     });
     counts.sort((a, b) => {
       const ai = CATEGORY_ORDER.indexOf(a.name);

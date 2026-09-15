@@ -12,8 +12,15 @@ export async function fetchFacilities(): Promise<FacilityListItem[]> {
   return data as FacilityListItem[];
 }
 
+export function isFullCategory(f: FacilityListItem, c: string): boolean {
+  return f.current_occupancy[c] + FULL_VALUE >= (f.max_occupancy[c] ?? 0);
+}
+
 export function isFull(f: FacilityListItem): boolean {
   return Object.entries(f.current_occupancy).some(
-    ([key, current]) => (f.max_occupancy[key] ?? 0) > 0 && current + FULL_VALUE >= (f.max_occupancy[key] ?? 0) && DECISION_CATEGORIES.includes(key)
+    ([key, current]) =>
+      (f.max_occupancy[key] ?? 0) > 0 &&
+      current + FULL_VALUE >= (f.max_occupancy[key] ?? 0) &&
+      DECISION_CATEGORIES.includes(key),
   );
 }
